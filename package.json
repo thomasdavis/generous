@@ -1,0 +1,32 @@
+{
+  "name": "generous",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "lint": "turbo run lint",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check --write .",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.11",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "turbo": "^2.7.5"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,json,css,md}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
+  }
+}
