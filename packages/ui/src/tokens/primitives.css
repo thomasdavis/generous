@@ -1,0 +1,284 @@
+/**
+ * Refined Utility Design System - Primitive Tokens
+ *
+ * These are the raw design values that form the foundation of the system.
+ * They should NOT be used directly in components - use semantic tokens instead.
+ *
+ * Color system uses OKLCH for perceptually uniform color manipulation.
+ */
+
+:root {
+  /* ============================================
+   * COLOR PRIMITIVES - OKLCH Scale
+   * ============================================ */
+
+  /* Gray Scale - Neutral tones for backgrounds, text, borders */
+  --color-gray-50: oklch(0.985 0.002 240);
+  --color-gray-100: oklch(0.967 0.003 240);
+  --color-gray-200: oklch(0.928 0.006 240);
+  --color-gray-300: oklch(0.872 0.01 240);
+  --color-gray-400: oklch(0.707 0.015 240);
+  --color-gray-500: oklch(0.551 0.018 240);
+  --color-gray-600: oklch(0.446 0.018 240);
+  --color-gray-700: oklch(0.372 0.017 240);
+  --color-gray-800: oklch(0.279 0.014 240);
+  --color-gray-900: oklch(0.208 0.012 240);
+  --color-gray-950: oklch(0.145 0.01 240);
+
+  /* White and Black */
+  --color-white: oklch(1 0 0);
+  --color-black: oklch(0 0 0);
+
+  /* Accent "Spark" - Neon Lime for highlights and CTAs */
+  --color-accent-50: oklch(0.98 0.08 128);
+  --color-accent-100: oklch(0.96 0.12 128);
+  --color-accent-200: oklch(0.92 0.18 128);
+  --color-accent-300: oklch(0.88 0.24 128);
+  --color-accent-400: oklch(0.92 0.31 128);
+  --color-accent-500: oklch(0.9 0.35 128); /* Primary: #ccff00 equivalent */
+  --color-accent-600: oklch(0.78 0.3 128);
+  --color-accent-700: oklch(0.65 0.25 128);
+  --color-accent-800: oklch(0.52 0.2 128);
+  --color-accent-900: oklch(0.42 0.15 128);
+
+  /* Success - Green tones */
+  --color-success-50: oklch(0.98 0.03 145);
+  --color-success-100: oklch(0.95 0.06 145);
+  --color-success-200: oklch(0.9 0.1 145);
+  --color-success-300: oklch(0.84 0.14 145);
+  --color-success-400: oklch(0.76 0.18 145);
+  --color-success-500: oklch(0.68 0.2 145);
+  --color-success-600: oklch(0.58 0.17 145);
+  --color-success-700: oklch(0.48 0.14 145);
+  --color-success-800: oklch(0.4 0.11 145);
+  --color-success-900: oklch(0.34 0.08 145);
+
+  /* Warning - Amber/Orange tones */
+  --color-warning-50: oklch(0.98 0.03 85);
+  --color-warning-100: oklch(0.95 0.08 85);
+  --color-warning-200: oklch(0.9 0.13 85);
+  --color-warning-300: oklch(0.85 0.18 85);
+  --color-warning-400: oklch(0.8 0.2 80);
+  --color-warning-500: oklch(0.75 0.22 75);
+  --color-warning-600: oklch(0.65 0.19 70);
+  --color-warning-700: oklch(0.55 0.16 65);
+  --color-warning-800: oklch(0.45 0.13 60);
+  --color-warning-900: oklch(0.38 0.1 55);
+
+  /* Error/Danger - Red tones */
+  --color-error-50: oklch(0.98 0.02 25);
+  --color-error-100: oklch(0.95 0.05 25);
+  --color-error-200: oklch(0.9 0.1 25);
+  --color-error-300: oklch(0.82 0.15 25);
+  --color-error-400: oklch(0.72 0.19 25);
+  --color-error-500: oklch(0.62 0.22 25);
+  --color-error-600: oklch(0.52 0.2 25);
+  --color-error-700: oklch(0.44 0.17 25);
+  --color-error-800: oklch(0.38 0.14 25);
+  --color-error-900: oklch(0.32 0.1 25);
+
+  /* Info - Blue tones */
+  --color-info-50: oklch(0.98 0.02 240);
+  --color-info-100: oklch(0.95 0.04 240);
+  --color-info-200: oklch(0.9 0.08 240);
+  --color-info-300: oklch(0.84 0.12 240);
+  --color-info-400: oklch(0.74 0.16 240);
+  --color-info-500: oklch(0.64 0.18 240);
+  --color-info-600: oklch(0.54 0.16 240);
+  --color-info-700: oklch(0.46 0.14 240);
+  --color-info-800: oklch(0.38 0.11 240);
+  --color-info-900: oklch(0.32 0.08 240);
+
+  /* ============================================
+   * SPACING SCALE
+   * ============================================
+   * Based on 4px base unit with geometric progression
+   */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 0.125rem; /* 2px */
+  --space-1: 0.25rem; /* 4px */
+  --space-1-5: 0.375rem; /* 6px */
+  --space-2: 0.5rem; /* 8px */
+  --space-2-5: 0.625rem; /* 10px */
+  --space-3: 0.75rem; /* 12px */
+  --space-3-5: 0.875rem; /* 14px */
+  --space-4: 1rem; /* 16px */
+  --space-5: 1.25rem; /* 20px */
+  --space-6: 1.5rem; /* 24px */
+  --space-7: 1.75rem; /* 28px */
+  --space-8: 2rem; /* 32px */
+  --space-9: 2.25rem; /* 36px */
+  --space-10: 2.5rem; /* 40px */
+  --space-11: 2.75rem; /* 44px */
+  --space-12: 3rem; /* 48px */
+  --space-14: 3.5rem; /* 56px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+  --space-28: 7rem; /* 112px */
+  --space-32: 8rem; /* 128px */
+  --space-36: 9rem; /* 144px */
+  --space-40: 10rem; /* 160px */
+  --space-44: 11rem; /* 176px */
+  --space-48: 12rem; /* 192px */
+  --space-52: 13rem; /* 208px */
+  --space-56: 14rem; /* 224px */
+  --space-60: 15rem; /* 240px */
+  --space-64: 16rem; /* 256px */
+  --space-72: 18rem; /* 288px */
+  --space-80: 20rem; /* 320px */
+  --space-96: 24rem; /* 384px */
+
+  /* ============================================
+   * TYPOGRAPHY
+   * ============================================ */
+
+  /* Font Families */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Font Sizes - Major Third Scale (1.25) */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+  --text-6xl: 3.75rem; /* 60px */
+  --text-7xl: 4.5rem; /* 72px */
+  --text-8xl: 6rem; /* 96px */
+  --text-9xl: 8rem; /* 128px */
+
+  /* Line Heights */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Font Weights */
+  --font-thin: 100;
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* Letter Spacing (Tracking) */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+
+  /* ============================================
+   * BORDER RADIUS
+   * ============================================ */
+  --radius-none: 0;
+  --radius-sm: 0.125rem; /* 2px */
+  --radius-default: 0.25rem; /* 4px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-3xl: 1.5rem; /* 24px */
+  --radius-full: 9999px;
+
+  /* ============================================
+   * SHADOWS - Soft, diffuse (NO hard offsets)
+   * ============================================ */
+  --shadow-xs: 0 1px 2px 0 oklch(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 oklch(0 0 0 / 0.08), 0 1px 2px -1px oklch(0 0 0 / 0.08);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.08), 0 2px 4px -2px oklch(0 0 0 / 0.08);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.08), 0 4px 6px -4px oklch(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.08), 0 8px 10px -6px oklch(0 0 0 / 0.08);
+  --shadow-2xl: 0 25px 50px -12px oklch(0 0 0 / 0.2);
+  --shadow-inner: inset 0 2px 4px 0 oklch(0 0 0 / 0.05);
+  --shadow-none: 0 0 0 0 transparent;
+
+  /* ============================================
+   * BORDERS
+   * ============================================ */
+  --border-width-0: 0;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-4: 4px;
+  --border-width-8: 8px;
+
+  /* ============================================
+   * Z-INDEX SCALE
+   * ============================================ */
+  --z-auto: auto;
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-dropdown: 1000;
+  --z-sticky: 1100;
+  --z-fixed: 1200;
+  --z-overlay: 1300;
+  --z-modal: 1400;
+  --z-popover: 1500;
+  --z-tooltip: 1600;
+  --z-toast: 1700;
+
+  /* ============================================
+   * TRANSITIONS
+   * ============================================ */
+  --duration-0: 0ms;
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ============================================
+   * BREAKPOINTS (for reference in JS/media queries)
+   * ============================================ */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ============================================
+   * OPACITY
+   * ============================================ */
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-25: 0.25;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-75: 0.75;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-95: 0.95;
+  --opacity-100: 1;
+}

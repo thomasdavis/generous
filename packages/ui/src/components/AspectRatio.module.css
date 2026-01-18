@@ -1,0 +1,26 @@
+/**
+ * AspectRatio - Maintain consistent dimensions
+ */
+
+.root {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--aspect-ratio, 1);
+}
+
+/* Fill container with child */
+.root > * {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Fallback for browsers without aspect-ratio support */
+@supports not (aspect-ratio: 1) {
+  .root {
+    padding-bottom: calc(100% / var(--aspect-ratio, 1));
+    height: 0;
+  }
+}

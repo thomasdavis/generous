@@ -1,0 +1,68 @@
+/**
+ * Progress - Task completion indicator
+ *
+ * Horizontal bar showing progress percentage.
+ */
+
+.root {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-secondary);
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  height: 4px;
+}
+
+.root[data-size="md"] {
+  height: 8px;
+}
+
+.root[data-size="lg"] {
+  height: 12px;
+}
+
+/* ============================================
+ * INDICATOR (fill)
+ * ============================================ */
+
+.indicator {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transition: transform var(--duration-300) var(--ease-out);
+}
+
+/* Default variant */
+.root[data-variant="default"] .indicator {
+  background-color: var(--action-primary-bg);
+}
+
+/* Accent variant */
+.root[data-variant="accent"] .indicator {
+  background-color: var(--accent);
+}
+
+/* ============================================
+ * INDETERMINATE
+ * ============================================ */
+
+.root[data-indeterminate="true"] .indicator {
+  width: 25%;
+  animation: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}

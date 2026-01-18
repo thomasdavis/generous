@@ -1,0 +1,343 @@
+/**
+ * Refined Utility Design System - Modern CSS Reset
+ *
+ * A minimal, modern CSS reset that provides a solid foundation
+ * without being overly opinionated.
+ *
+ * Based on best practices from Andy Bell, Josh Comeau, and others.
+ */
+
+/* ============================================
+ * BOX SIZING
+ * ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ============================================
+ * MARGIN RESET
+ * ============================================ */
+
+* {
+  margin: 0;
+}
+
+/* ============================================
+ * BODY DEFAULTS
+ * ============================================ */
+
+html {
+  /* Prevent font size inflation on mobile */
+  -moz-text-size-adjust: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+
+  /* Smooth scrolling (respects reduced motion) */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  /* Minimum full viewport height */
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  /* Prevent text rendering issues */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  /* Default line height */
+  line-height: 1.5;
+}
+
+/* ============================================
+ * TYPOGRAPHY
+ * ============================================ */
+
+/* Inherit fonts for form controls */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+/* Prevent textarea resize breaking layout */
+textarea {
+  resize: vertical;
+}
+
+/* Remove default heading styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+/* Balance text wrapping on headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* ============================================
+ * MEDIA
+ * ============================================ */
+
+/* Responsive media by default */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* Remove built-in styling for images */
+img {
+  height: auto;
+  font-style: italic; /* Alt text styling */
+}
+
+/* ============================================
+ * FORM ELEMENTS
+ * ============================================ */
+
+/* Remove default button styles */
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+/* Remove default fieldset styles */
+fieldset {
+  border: none;
+  padding: 0;
+}
+
+/* Remove default legend padding */
+legend {
+  padding: 0;
+}
+
+/* Remove default list styles */
+ul,
+ol {
+  list-style: none;
+  padding: 0;
+}
+
+/* Remove default link underline */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ============================================
+ * TABLES
+ * ============================================ */
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* ============================================
+ * INTERACTIVE ELEMENTS
+ * ============================================ */
+
+/* Remove tap highlight on mobile */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[tabindex] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Consistent focus outlines */
+:focus-visible {
+  outline: var(--focus-ring-width, 2px) solid var(--focus-ring-color, currentColor);
+  outline-offset: var(--focus-ring-offset, 2px);
+}
+
+/* Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Disabled states */
+[disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ============================================
+ * ACCESSIBILITY
+ * ============================================ */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Make focus visible skip links */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: var(--z-tooltip, 9999);
+  padding: 1rem;
+  background: var(--surface-base, white);
+  color: var(--text-primary, black);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ============================================
+ * DIALOG & POPOVER
+ * ============================================ */
+
+/* Reset dialog styles */
+dialog {
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: unset;
+  max-height: unset;
+}
+
+dialog::backdrop {
+  background: transparent;
+}
+
+/* Reset popover styles */
+[popover] {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* ============================================
+ * SCROLLBAR STYLING
+ * ============================================ */
+
+/* Thin scrollbars for webkit browsers */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track, transparent);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb, #888);
+  border-radius: var(--radius-full, 9999px);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover, #666);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, #888) var(--scrollbar-track, transparent);
+}
+
+/* ============================================
+ * SELECTION
+ * ============================================ */
+
+::selection {
+  background: var(--accent, oklch(0.9 0.35 128));
+  color: var(--accent-text, black);
+}
+
+/* ============================================
+ * PRINT STYLES
+ * ============================================ */
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent;
+    color: black;
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+
+  img {
+    page-break-inside: avoid;
+  }
+
+  h2,
+  h3,
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}

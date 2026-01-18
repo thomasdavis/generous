@@ -1,0 +1,112 @@
+/**
+ * Checkbox - Selection control
+ *
+ * Uses thin crisp borders and jet black/white for checked state.
+ */
+
+.root {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  /* Sizing */
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-default);
+
+  /* Appearance */
+  background-color: var(--control-bg);
+  border: 1px solid var(--control-border);
+
+  /* Interaction */
+  cursor: pointer;
+
+  /* Transitions */
+  transition:
+    background-color var(--duration-150) var(--ease-out),
+    border-color var(--duration-150) var(--ease-out),
+    box-shadow var(--duration-150) var(--ease-out);
+}
+
+/* Hover */
+.root:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+/* Focus */
+.root:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Checked state */
+.root[data-state="checked"],
+.root[data-state="indeterminate"] {
+  background-color: var(--control-bg-checked);
+  border-color: var(--control-bg-checked);
+}
+
+/* Error state */
+.root[data-error="true"] {
+  border-color: var(--border-error);
+}
+
+.root[data-error="true"]:focus-visible {
+  box-shadow:
+    0 0 0 var(--focus-ring-offset) var(--surface-base),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-error-500);
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  width: 16px;
+  height: 16px;
+}
+
+.root[data-size="md"] {
+  width: 18px;
+  height: 18px;
+}
+
+.root[data-size="lg"] {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-md);
+}
+
+/* ============================================
+ * INDICATOR
+ * ============================================ */
+
+.indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--control-check-color);
+}
+
+.icon {
+  width: 12px;
+  height: 12px;
+}
+
+.root[data-size="sm"] .icon {
+  width: 10px;
+  height: 10px;
+}
+
+.root[data-size="lg"] .icon {
+  width: 14px;
+  height: 14px;
+}

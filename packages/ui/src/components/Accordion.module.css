@@ -1,0 +1,121 @@
+/**
+ * Accordion - Collapsible content sections
+ */
+
+.root {
+  width: 100%;
+}
+
+/* ============================================
+ * ITEM
+ * ============================================ */
+
+.item {
+  border-bottom: 1px solid var(--border-default);
+}
+
+.item:first-child {
+  border-top: 1px solid var(--border-default);
+}
+
+.item[data-disabled="true"] {
+  opacity: 0.5;
+}
+
+/* ============================================
+ * HEADER
+ * ============================================ */
+
+.header {
+  margin: 0;
+}
+
+/* ============================================
+ * TRIGGER
+ * ============================================ */
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-4) 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+
+  transition: color var(--duration-150) var(--ease-out);
+}
+
+.trigger:hover {
+  color: var(--text-secondary);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.item[data-disabled="true"] .trigger {
+  cursor: not-allowed;
+}
+
+.triggerText {
+  flex: 1;
+}
+
+.triggerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  transition: transform var(--duration-200) var(--ease-out);
+}
+
+.trigger[data-state="open"] .triggerIcon {
+  transform: rotate(180deg);
+}
+
+.chevron {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
+  overflow: hidden;
+}
+
+.content[data-state="open"] {
+  animation: accordion-open var(--duration-200) var(--ease-out);
+}
+
+.content[data-state="closed"] {
+  display: none;
+}
+
+@keyframes accordion-open {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--accordion-content-height, auto);
+    opacity: 1;
+  }
+}
+
+.contentInner {
+  padding-bottom: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}

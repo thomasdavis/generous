@@ -1,0 +1,281 @@
+/**
+ * Button - Action trigger component
+ *
+ * Design principles:
+ * - NO hard offset shadows
+ * - Thin crisp borders (1px)
+ * - Uses rounded-lg/xl/2xl
+ * - Smooth transitions
+ */
+
+.root {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+
+  /* Typography */
+  font-family: var(--font-sans);
+  font-weight: var(--font-medium);
+  line-height: 1;
+  white-space: nowrap;
+
+  /* Sizing defaults */
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  min-height: 40px;
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+
+  /* Transitions */
+  transition:
+    background-color var(--duration-150) var(--ease-out),
+    border-color var(--duration-150) var(--ease-out),
+    color var(--duration-150) var(--ease-out),
+    box-shadow var(--duration-150) var(--ease-out),
+    opacity var(--duration-150) var(--ease-out);
+
+  /* Reset */
+  border: 1px solid transparent;
+  outline: none;
+}
+
+/* Focus state - accent outline */
+.root:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled state */
+.root:disabled,
+.root[data-loading="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ============================================
+ * VARIANTS
+ * ============================================ */
+
+/* Primary - Jet Black / White */
+.root[data-variant="primary"] {
+  background-color: var(--action-primary-bg);
+  color: var(--action-primary-text);
+  border-color: var(--action-primary-bg);
+}
+
+.root[data-variant="primary"]:hover:not(:disabled) {
+  background-color: var(--action-primary-bg-hover);
+  border-color: var(--action-primary-bg-hover);
+}
+
+.root[data-variant="primary"]:active:not(:disabled) {
+  background-color: var(--action-primary-bg-active);
+  border-color: var(--action-primary-bg-active);
+}
+
+/* Secondary */
+.root[data-variant="secondary"] {
+  background-color: var(--action-secondary-bg);
+  color: var(--action-secondary-text);
+  border-color: transparent;
+}
+
+.root[data-variant="secondary"]:hover:not(:disabled) {
+  background-color: var(--action-secondary-bg-hover);
+}
+
+.root[data-variant="secondary"]:active:not(:disabled) {
+  background-color: var(--action-secondary-bg-active);
+}
+
+/* Ghost */
+.root[data-variant="ghost"] {
+  background-color: transparent;
+  color: var(--action-ghost-text);
+  border-color: transparent;
+}
+
+.root[data-variant="ghost"]:hover:not(:disabled) {
+  background-color: var(--action-ghost-bg-hover);
+}
+
+.root[data-variant="ghost"]:active:not(:disabled) {
+  background-color: var(--action-ghost-bg-active);
+}
+
+/* Outline */
+.root[data-variant="outline"] {
+  background-color: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.root[data-variant="outline"]:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.root[data-variant="outline"]:active:not(:disabled) {
+  background-color: var(--surface-active);
+}
+
+/* Destructive */
+.root[data-variant="destructive"] {
+  background-color: var(--action-destructive-bg);
+  color: var(--action-destructive-text);
+  border-color: var(--action-destructive-bg);
+}
+
+.root[data-variant="destructive"]:hover:not(:disabled) {
+  background-color: var(--action-destructive-bg-hover);
+  border-color: var(--action-destructive-bg-hover);
+}
+
+.root[data-variant="destructive"]:active:not(:disabled) {
+  background-color: var(--action-destructive-bg-active);
+  border-color: var(--action-destructive-bg-active);
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  padding: var(--space-1-5) var(--space-3);
+  font-size: var(--text-xs);
+  min-height: 32px;
+  border-radius: var(--radius-md);
+  gap: var(--space-1-5);
+}
+
+.root[data-size="md"] {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  min-height: 40px;
+  border-radius: var(--radius-lg);
+}
+
+.root[data-size="lg"] {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+  min-height: 48px;
+  border-radius: var(--radius-lg);
+  gap: var(--space-2-5);
+}
+
+.root[data-size="icon"] {
+  padding: var(--space-2);
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: var(--radius-lg);
+}
+
+.root[data-size="icon"][data-size="sm"] {
+  padding: var(--space-1-5);
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.root[data-size="icon"][data-size="lg"] {
+  padding: var(--space-3);
+  min-width: 48px;
+  min-height: 48px;
+}
+
+/* Full width */
+.root[data-full-width="true"] {
+  width: 100%;
+}
+
+/* ============================================
+ * INNER ELEMENTS
+ * ============================================ */
+
+.text {
+  display: inline-flex;
+  align-items: center;
+}
+
+.iconLeft,
+.iconRight {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconLeft svg,
+.iconRight svg {
+  width: 1em;
+  height: 1em;
+}
+
+.root[data-size="sm"] .iconLeft svg,
+.root[data-size="sm"] .iconRight svg {
+  width: 14px;
+  height: 14px;
+}
+
+.root[data-size="lg"] .iconLeft svg,
+.root[data-size="lg"] .iconRight svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ============================================
+ * LOADING SPINNER
+ * ============================================ */
+
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinnerIcon {
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+.root[data-size="sm"] .spinnerIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.root[data-size="lg"] .spinnerIcon {
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hide text when loading */
+.root[data-loading="true"] .text,
+.root[data-loading="true"] .iconLeft,
+.root[data-loading="true"] .iconRight {
+  visibility: hidden;
+}
+
+.root[data-loading="true"] {
+  position: relative;
+}
+
+.root[data-loading="true"] .spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

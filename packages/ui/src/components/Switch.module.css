@@ -1,0 +1,116 @@
+/**
+ * Switch - Toggle control for binary settings
+ *
+ * Horizontal pill track with sliding thumb.
+ */
+
+.root {
+  /* Layout */
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  /* Sizing */
+  width: 44px;
+  height: 24px;
+  padding: 2px;
+  border-radius: var(--radius-full);
+
+  /* Appearance - Off state */
+  background-color: var(--switch-bg-off);
+  border: none;
+
+  /* Interaction */
+  cursor: pointer;
+
+  /* Transitions */
+  transition: background-color var(--duration-150) var(--ease-out);
+}
+
+/* Focus */
+.root:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Checked state */
+.root[data-state="checked"] {
+  background-color: var(--switch-bg-on);
+}
+
+/* ============================================
+ * THUMB
+ * ============================================ */
+
+.thumb {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background-color: var(--switch-thumb);
+  box-shadow: var(--shadow-sm);
+
+  /* Transitions */
+  transition: transform var(--duration-150) var(--ease-out);
+}
+
+/* Move thumb when checked */
+.root[data-state="checked"] .thumb {
+  transform: translateX(20px);
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+/* Small */
+.root[data-size="sm"] {
+  width: 36px;
+  height: 20px;
+}
+
+.root[data-size="sm"] .thumb {
+  width: 16px;
+  height: 16px;
+}
+
+.root[data-size="sm"][data-state="checked"] .thumb {
+  transform: translateX(16px);
+}
+
+/* Medium (default) */
+.root[data-size="md"] {
+  width: 44px;
+  height: 24px;
+}
+
+.root[data-size="md"] .thumb {
+  width: 20px;
+  height: 20px;
+}
+
+.root[data-size="md"][data-state="checked"] .thumb {
+  transform: translateX(20px);
+}
+
+/* Large */
+.root[data-size="lg"] {
+  width: 52px;
+  height: 28px;
+}
+
+.root[data-size="lg"] .thumb {
+  width: 24px;
+  height: 24px;
+}
+
+.root[data-size="lg"][data-state="checked"] .thumb {
+  transform: translateX(24px);
+}

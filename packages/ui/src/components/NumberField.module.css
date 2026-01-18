@@ -1,0 +1,168 @@
+/**
+ * NumberField - Numeric input with increment/decrement
+ */
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--input-bg);
+  overflow: hidden;
+
+  /* Transitions */
+  transition:
+    border-color var(--duration-150) var(--ease-out),
+    box-shadow var(--duration-150) var(--ease-out);
+}
+
+/* Hover */
+.root:hover:not([data-disabled="true"]) {
+  border-color: var(--input-border-hover);
+}
+
+/* Focus within */
+.root:focus-within {
+  border-color: var(--input-border-focus);
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.root[data-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Error */
+.root[data-error="true"] {
+  border-color: var(--input-border-error);
+}
+
+.root[data-error="true"]:focus-within {
+  box-shadow:
+    0 0 0 var(--focus-ring-offset) var(--surface-base),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-error-500);
+}
+
+/* ============================================
+ * INPUT
+ * ============================================ */
+
+.input {
+  flex: 1;
+  min-width: 60px;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--input-text);
+  text-align: center;
+  outline: none;
+
+  /* Hide number input spinners */
+  -moz-appearance: textfield;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* ============================================
+ * BUTTONS
+ * ============================================ */
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+  padding: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  /* Transitions */
+  transition: background-color var(--duration-150) var(--ease-out);
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.button:active:not(:disabled) {
+  background-color: var(--surface-active);
+}
+
+.button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.button:first-child {
+  border-right: 1px solid var(--border-subtle);
+}
+
+.button:last-child {
+  border-left: 1px solid var(--border-subtle);
+}
+
+/* ============================================
+ * ICON
+ * ============================================ */
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  border-radius: var(--radius-md);
+}
+
+.root[data-size="sm"] .input {
+  padding: var(--space-1-5) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.root[data-size="sm"] .button {
+  width: 28px;
+  padding: var(--space-1-5);
+}
+
+.root[data-size="sm"] .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.root[data-size="lg"] .input {
+  padding: var(--space-2-5) var(--space-4);
+  font-size: var(--text-base);
+}
+
+.root[data-size="lg"] .button {
+  width: 44px;
+  padding: var(--space-2-5);
+}
+
+.root[data-size="lg"] .icon {
+  width: 18px;
+  height: 18px;
+}

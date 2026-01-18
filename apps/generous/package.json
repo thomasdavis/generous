@@ -15,6 +15,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@generous/ui": "workspace:*",
     "@neondatabase/serverless": "^1.0.2",
     "@trpc/client": "^11.8.1",
     "@trpc/next": "^11.8.1",

@@ -1,0 +1,345 @@
+/**
+ * Toast - Notification messages
+ *
+ * Design: Subtle backgrounds, thin borders, smooth animations.
+ */
+
+/* ============================================
+ * VIEWPORT (Container for all toasts)
+ * ============================================ */
+
+.viewport {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  max-width: 420px;
+  width: 100%;
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+/* Position variants */
+.viewport[data-position="top-left"] {
+  top: 0;
+  left: 0;
+}
+
+.viewport[data-position="top-center"] {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.viewport[data-position="top-right"] {
+  top: 0;
+  right: 0;
+}
+
+.viewport[data-position="bottom-left"] {
+  bottom: 0;
+  left: 0;
+}
+
+.viewport[data-position="bottom-center"] {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.viewport[data-position="bottom-right"] {
+  bottom: 0;
+  right: 0;
+}
+
+/* ============================================
+ * ROOT
+ * ============================================ */
+
+.root {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--surface-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevation-3);
+  pointer-events: auto;
+  animation: slideIn var(--duration-300) var(--ease-out);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Left positions slide from left */
+.viewport[data-position="top-left"] .root,
+.viewport[data-position="bottom-left"] .root {
+  animation-name: slideInLeft;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Center positions fade and slide up/down */
+.viewport[data-position="top-center"] .root {
+  animation-name: slideInTop;
+}
+
+.viewport[data-position="bottom-center"] .root {
+  animation-name: slideInBottom;
+}
+
+@keyframes slideInTop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Exiting state */
+.root[data-state="closing"] {
+  animation: fadeOut var(--duration-200) var(--ease-in) forwards;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* ============================================
+ * VARIANTS
+ * ============================================ */
+
+.root[data-variant="default"] {
+  background-color: var(--surface-base);
+  border-color: var(--border-default);
+}
+
+.root[data-variant="success"] {
+  background-color: var(--surface-success);
+  border-color: var(--border-success);
+}
+
+.root[data-variant="error"] {
+  background-color: var(--surface-error);
+  border-color: var(--border-error);
+}
+
+.root[data-variant="warning"] {
+  background-color: var(--surface-warning);
+  border-color: var(--border-warning);
+}
+
+.root[data-variant="info"] {
+  background-color: var(--surface-info);
+  border-color: var(--border-info);
+}
+
+/* ============================================
+ * ICON
+ * ============================================ */
+
+.icon {
+  flex-shrink: 0;
+  width: var(--space-5);
+  height: var(--space-5);
+  color: var(--text-secondary);
+}
+
+.root[data-variant="success"] .icon {
+  color: var(--text-success);
+}
+
+.root[data-variant="error"] .icon {
+  color: var(--text-error);
+}
+
+.root[data-variant="warning"] .icon {
+  color: var(--text-warning);
+}
+
+.root[data-variant="info"] .icon {
+  color: var(--text-info);
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================
+ * TITLE
+ * ============================================ */
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ============================================
+ * DESCRIPTION
+ * ============================================ */
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ============================================
+ * ACTION
+ * ============================================ */
+
+.action {
+  flex-shrink: 0;
+}
+
+/* ============================================
+ * CLOSE
+ * ============================================ */
+
+.close {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-150) var(--ease-out),
+    color var(--duration-150) var(--ease-out);
+}
+
+.close:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+.close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.close svg {
+  width: var(--space-4);
+  height: var(--space-4);
+}
+
+/* ============================================
+ * PROGRESS BAR
+ * ============================================ */
+
+.progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--surface-secondary);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: var(--accent-primary);
+  transition: width linear;
+}
+
+.root[data-variant="success"] .progressBar {
+  background-color: var(--text-success);
+}
+
+.root[data-variant="error"] .progressBar {
+  background-color: var(--text-error);
+}
+
+.root[data-variant="warning"] .progressBar {
+  background-color: var(--text-warning);
+}
+
+.root[data-variant="info"] .progressBar {
+  background-color: var(--text-info);
+}
+
+/* ============================================
+ * REDUCED MOTION
+ * ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    animation: fadeIn var(--duration-150) var(--ease-out);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .root[data-state="closing"] {
+    animation: fadeOutSimple var(--duration-150) var(--ease-in) forwards;
+  }
+
+  @keyframes fadeOutSimple {
+    to {
+      opacity: 0;
+    }
+  }
+}

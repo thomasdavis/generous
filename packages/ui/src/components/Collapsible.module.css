@@ -1,0 +1,51 @@
+/**
+ * Collapsible - Show/hide content toggle
+ */
+
+.root {
+  width: 100%;
+}
+
+.root[data-disabled="true"] {
+  opacity: 0.5;
+}
+
+/* ============================================
+ * TRIGGER
+ * ============================================ */
+
+.trigger {
+  /* Allow consumers to style the trigger */
+  cursor: pointer;
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
+  overflow: hidden;
+}
+
+.content[data-state="open"] {
+  animation: collapsible-open var(--duration-200) var(--ease-out);
+}
+
+.content[data-state="closed"] {
+  display: none;
+}
+
+@keyframes collapsible-open {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--collapsible-content-height, auto);
+    opacity: 1;
+  }
+}

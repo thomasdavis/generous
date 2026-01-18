@@ -1,0 +1,59 @@
+/**
+ * Label - Form field caption
+ *
+ * Design: Uppercase labels with wide tracking option.
+ */
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-sans);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  cursor: default;
+}
+
+/* Peer disabled state */
+.root:has(+ :disabled),
+.root:has(+ * :disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  font-size: var(--text-xs);
+}
+
+.root[data-size="md"] {
+  font-size: var(--text-sm);
+}
+
+.root[data-size="lg"] {
+  font-size: var(--text-base);
+}
+
+/* ============================================
+ * UPPERCASE VARIANT
+ * ============================================ */
+
+.root[data-uppercase="true"] {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--text-secondary);
+}
+
+/* ============================================
+ * REQUIRED INDICATOR
+ * ============================================ */
+
+.required {
+  color: var(--color-error-500);
+  font-weight: var(--font-normal);
+}

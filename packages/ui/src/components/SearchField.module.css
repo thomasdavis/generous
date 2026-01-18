@@ -1,0 +1,164 @@
+/**
+ * SearchField - Search input with icon and clear button
+ */
+
+.root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--input-bg);
+  overflow: hidden;
+
+  /* Transitions */
+  transition:
+    border-color var(--duration-150) var(--ease-out),
+    box-shadow var(--duration-150) var(--ease-out);
+}
+
+/* Hover */
+.root:hover:not([data-disabled="true"]) {
+  border-color: var(--input-border-hover);
+}
+
+/* Focus within */
+.root:focus-within {
+  border-color: var(--input-border-focus);
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.root[data-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+ * SEARCH ICON
+ * ============================================ */
+
+.searchIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: var(--space-3);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* ============================================
+ * INPUT
+ * ============================================ */
+
+.input {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--input-text);
+  outline: none;
+
+  /* Hide native search cancel button */
+  -webkit-appearance: none;
+}
+
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration,
+.input::-webkit-search-results-button,
+.input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  display: none;
+}
+
+.input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+/* ============================================
+ * CLEAR BUTTON
+ * ============================================ */
+
+.clearButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 100%;
+  padding: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  flex-shrink: 0;
+
+  /* Transitions */
+  transition: color var(--duration-150) var(--ease-out);
+}
+
+.clearButton:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================
+ * ICON
+ * ============================================ */
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  border-radius: var(--radius-md);
+}
+
+.root[data-size="sm"] .searchIcon {
+  padding-left: var(--space-2);
+}
+
+.root[data-size="sm"] .input {
+  padding: var(--space-1-5) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.root[data-size="sm"] .clearButton {
+  width: 28px;
+  padding: var(--space-1-5);
+}
+
+.root[data-size="sm"] .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.root[data-size="lg"] .searchIcon {
+  padding-left: var(--space-4);
+}
+
+.root[data-size="lg"] .input {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-base);
+}
+
+.root[data-size="lg"] .clearButton {
+  width: 40px;
+  padding: var(--space-3);
+}
+
+.root[data-size="lg"] .icon {
+  width: 18px;
+  height: 18px;
+}

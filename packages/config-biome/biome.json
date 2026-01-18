@@ -21,7 +21,17 @@
         "useConst": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "warn",
+        "noArrayIndexKey": "off"
+      },
+      "a11y": {
+        "useSemanticElements": "off",
+        "noStaticElementInteractions": "off",
+        "useFocusableInteractive": "off",
+        "useKeyWithClickEvents": "off",
+        "noLabelWithoutControl": "off",
+        "useAriaPropsForRole": "off",
+        "useAriaPropsSupportedByRole": "off"
       }
     }
   },

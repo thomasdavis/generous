@@ -10,16 +10,26 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"
+    },
+    "./styles": {
+      "import": "./src/styles/index.css"
+    },
+    "./tokens": {
+      "import": "./src/tokens/index.css"
     }
   },
   "scripts": {
     "lint": "biome check .",
     "test": "vitest run"
   },
+  "dependencies": {
+    "lucide-react": "^0.468.0"
+  },
   "devDependencies": {
     "@generous/config-typescript": "workspace:*",
     "@testing-library/react": "^16.3.1",
     "@types/react": "^19.2.8",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "happy-dom": "^18.0.1",
     "react": "^19.2.3",

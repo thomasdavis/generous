@@ -1,0 +1,97 @@
+/**
+ * Textarea - Multi-line text input
+ *
+ * Same styling as Input but for multi-line content.
+ */
+
+.root {
+  /* Layout */
+  display: block;
+  width: 100%;
+
+  /* Typography */
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+
+  /* Sizing */
+  padding: var(--space-2) var(--space-3);
+  min-height: 80px;
+  border-radius: var(--radius-lg);
+
+  /* Appearance */
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+
+  /* Resize */
+  resize: vertical;
+
+  /* Transitions */
+  transition:
+    border-color var(--duration-150) var(--ease-out),
+    box-shadow var(--duration-150) var(--ease-out);
+}
+
+/* Placeholder */
+.root::placeholder {
+  color: var(--input-placeholder);
+}
+
+/* Hover */
+.root:hover:not(:disabled):not(:focus) {
+  border-color: var(--input-border-hover);
+}
+
+/* Focus */
+.root:focus {
+  outline: none;
+  border-color: var(--input-border-focus);
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  resize: none;
+}
+
+/* Error */
+.root[data-error="true"] {
+  border-color: var(--input-border-error);
+}
+
+.root[data-error="true"]:focus {
+  box-shadow:
+    0 0 0 var(--focus-ring-offset) var(--surface-base),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-error-500);
+}
+
+/* Non-resizable */
+.root[data-resizable="false"] {
+  resize: none;
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  padding: var(--space-1-5) var(--space-2-5);
+  min-height: 60px;
+  font-size: var(--text-xs);
+  border-radius: var(--radius-md);
+}
+
+.root[data-size="md"] {
+  padding: var(--space-2) var(--space-3);
+  min-height: 80px;
+  font-size: var(--text-sm);
+}
+
+.root[data-size="lg"] {
+  padding: var(--space-3) var(--space-4);
+  min-height: 100px;
+  font-size: var(--text-base);
+}

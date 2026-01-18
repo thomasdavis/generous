@@ -1,0 +1,123 @@
+/**
+ * Tabs - Navigation between content sections
+ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.root[data-orientation="vertical"] {
+  flex-direction: row;
+}
+
+/* ============================================
+ * LIST
+ * ============================================ */
+
+.list {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: var(--space-px);
+}
+
+.list[data-orientation="vertical"] {
+  flex-direction: column;
+  border-bottom: none;
+  border-right: 1px solid var(--border-default);
+  padding-right: var(--space-px);
+  padding-bottom: 0;
+}
+
+/* ============================================
+ * TRIGGER
+ * ============================================ */
+
+.trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+
+  transition:
+    color var(--duration-150) var(--ease-out),
+    background-color var(--duration-150) var(--ease-out);
+}
+
+.list[data-orientation="vertical"] .trigger {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  justify-content: flex-start;
+}
+
+.trigger:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: var(--surface-hover);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Active state */
+.trigger[data-state="active"] {
+  color: var(--text-primary);
+}
+
+/* Active indicator - bottom border */
+.trigger[data-state="active"]::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--action-primary-bg);
+}
+
+.list[data-orientation="vertical"] .trigger[data-state="active"]::after {
+  bottom: 0;
+  left: auto;
+  right: -1px;
+  top: 0;
+  width: 2px;
+  height: auto;
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
+  padding: var(--space-4) 0;
+}
+
+.content:focus-visible {
+  outline: none;
+}
+
+.content[data-state="inactive"] {
+  display: none;
+}
+
+.root[data-orientation="vertical"] .content {
+  padding: 0 0 0 var(--space-4);
+  flex: 1;
+}

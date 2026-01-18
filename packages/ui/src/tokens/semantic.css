@@ -1,0 +1,242 @@
+/**
+ * Refined Utility Design System - Semantic Tokens
+ *
+ * These tokens map primitive values to meaningful, contextual names.
+ * Uses CSS light-dark() for automatic theme switching.
+ *
+ * Components should use these tokens, never primitives directly.
+ */
+
+:root {
+  /* Enable automatic light/dark color scheme */
+  color-scheme: light dark;
+
+  /* ============================================
+   * SURFACE COLORS
+   * ============================================ */
+
+  /* Page background */
+  --surface-base: light-dark(var(--color-white), var(--color-gray-900));
+
+  /* Elevated surfaces (cards, modals) */
+  --surface-primary: light-dark(var(--color-gray-50), var(--color-gray-800));
+  --surface-secondary: light-dark(var(--color-gray-100), var(--color-gray-700));
+  --surface-tertiary: light-dark(var(--color-gray-200), var(--color-gray-600));
+
+  /* Inverted surface for contrast areas */
+  --surface-inverted: light-dark(var(--color-gray-900), var(--color-gray-50));
+
+  /* Overlay backgrounds */
+  --surface-overlay: light-dark(oklch(0 0 0 / 0.4), oklch(0 0 0 / 0.6));
+
+  /* Subtle hover states */
+  --surface-hover: light-dark(oklch(0 0 0 / 0.04), oklch(1 0 0 / 0.06));
+
+  /* Active/pressed states */
+  --surface-active: light-dark(oklch(0 0 0 / 0.08), oklch(1 0 0 / 0.1));
+
+  /* ============================================
+   * TEXT COLORS
+   * ============================================ */
+
+  /* Primary text - highest contrast */
+  --text-primary: light-dark(var(--color-gray-900), var(--color-gray-50));
+
+  /* Secondary text - slightly muted */
+  --text-secondary: light-dark(var(--color-gray-600), var(--color-gray-400));
+
+  /* Tertiary text - significantly muted */
+  --text-tertiary: light-dark(var(--color-gray-500), var(--color-gray-500));
+
+  /* Placeholder text */
+  --text-placeholder: light-dark(var(--color-gray-400), var(--color-gray-500));
+
+  /* Disabled text */
+  --text-disabled: light-dark(var(--color-gray-400), var(--color-gray-600));
+
+  /* Inverted text (on dark backgrounds in light mode, vice versa) */
+  --text-inverted: light-dark(var(--color-gray-50), var(--color-gray-900));
+
+  /* Link text */
+  --text-link: light-dark(var(--color-gray-900), var(--color-gray-100));
+  --text-link-hover: light-dark(var(--color-gray-700), var(--color-gray-300));
+
+  /* ============================================
+   * BORDER COLORS
+   * ============================================ */
+
+  /* Default border - subtle */
+  --border-default: light-dark(var(--color-gray-200), var(--color-gray-700));
+
+  /* Strong border - more visible */
+  --border-strong: light-dark(var(--color-gray-300), var(--color-gray-600));
+
+  /* Subtle border - very light */
+  --border-subtle: light-dark(var(--color-gray-100), var(--color-gray-800));
+
+  /* Focus ring color */
+  --border-focus: var(--color-accent-500);
+
+  /* Error state border */
+  --border-error: light-dark(var(--color-error-500), var(--color-error-400));
+
+  /* Success state border */
+  --border-success: light-dark(var(--color-success-500), var(--color-success-400));
+
+  /* ============================================
+   * ACTION COLORS
+   * ============================================ */
+
+  /* Primary action (CTA buttons) - Jet Black / White */
+  --action-primary-bg: light-dark(var(--color-gray-900), var(--color-white));
+  --action-primary-text: light-dark(var(--color-white), var(--color-gray-900));
+  --action-primary-bg-hover: light-dark(var(--color-gray-800), var(--color-gray-100));
+  --action-primary-bg-active: light-dark(var(--color-gray-700), var(--color-gray-200));
+
+  /* Secondary action */
+  --action-secondary-bg: light-dark(var(--color-gray-100), var(--color-gray-700));
+  --action-secondary-text: light-dark(var(--color-gray-900), var(--color-gray-100));
+  --action-secondary-bg-hover: light-dark(var(--color-gray-200), var(--color-gray-600));
+  --action-secondary-bg-active: light-dark(var(--color-gray-300), var(--color-gray-500));
+
+  /* Ghost/transparent action */
+  --action-ghost-bg: transparent;
+  --action-ghost-text: light-dark(var(--color-gray-700), var(--color-gray-300));
+  --action-ghost-bg-hover: light-dark(var(--color-gray-100), var(--color-gray-800));
+  --action-ghost-bg-active: light-dark(var(--color-gray-200), var(--color-gray-700));
+
+  /* Destructive action */
+  --action-destructive-bg: light-dark(var(--color-error-600), var(--color-error-500));
+  --action-destructive-text: var(--color-white);
+  --action-destructive-bg-hover: light-dark(var(--color-error-700), var(--color-error-400));
+  --action-destructive-bg-active: light-dark(var(--color-error-800), var(--color-error-300));
+
+  /* ============================================
+   * ACCENT COLOR
+   * ============================================ */
+
+  /* Neon Lime "Spark" - used for highlights, focus rings, badges */
+  --accent: var(--color-accent-500);
+  --accent-subtle: light-dark(var(--color-accent-100), var(--color-accent-900));
+  --accent-text: var(--color-gray-900); /* Text on accent background */
+  --accent-hover: light-dark(var(--color-accent-400), var(--color-accent-400));
+  --accent-active: light-dark(var(--color-accent-600), var(--color-accent-600));
+
+  /* ============================================
+   * STATE COLORS
+   * ============================================ */
+
+  /* Success */
+  --state-success-bg: light-dark(var(--color-success-50), var(--color-success-900));
+  --state-success-text: light-dark(var(--color-success-700), var(--color-success-300));
+  --state-success-border: light-dark(var(--color-success-200), var(--color-success-700));
+  --state-success-icon: light-dark(var(--color-success-600), var(--color-success-400));
+
+  /* Warning */
+  --state-warning-bg: light-dark(var(--color-warning-50), var(--color-warning-900));
+  --state-warning-text: light-dark(var(--color-warning-700), var(--color-warning-300));
+  --state-warning-border: light-dark(var(--color-warning-200), var(--color-warning-700));
+  --state-warning-icon: light-dark(var(--color-warning-600), var(--color-warning-400));
+
+  /* Error */
+  --state-error-bg: light-dark(var(--color-error-50), var(--color-error-900));
+  --state-error-text: light-dark(var(--color-error-700), var(--color-error-300));
+  --state-error-border: light-dark(var(--color-error-200), var(--color-error-700));
+  --state-error-icon: light-dark(var(--color-error-600), var(--color-error-400));
+
+  /* Info */
+  --state-info-bg: light-dark(var(--color-info-50), var(--color-info-900));
+  --state-info-text: light-dark(var(--color-info-700), var(--color-info-300));
+  --state-info-border: light-dark(var(--color-info-200), var(--color-info-700));
+  --state-info-icon: light-dark(var(--color-info-600), var(--color-info-400));
+
+  /* ============================================
+   * FORM CONTROLS
+   * ============================================ */
+
+  /* Input fields */
+  --input-bg: light-dark(var(--color-white), var(--color-gray-800));
+  --input-border: var(--border-default);
+  --input-border-hover: var(--border-strong);
+  --input-border-focus: var(--border-focus);
+  --input-border-error: var(--border-error);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-placeholder);
+
+  /* Checkbox/Radio */
+  --control-bg: light-dark(var(--color-white), var(--color-gray-800));
+  --control-bg-checked: var(--action-primary-bg);
+  --control-border: var(--border-strong);
+  --control-check-color: var(--action-primary-text);
+
+  /* Switch */
+  --switch-bg-off: light-dark(var(--color-gray-200), var(--color-gray-600));
+  --switch-bg-on: var(--action-primary-bg);
+  --switch-thumb: var(--color-white);
+
+  /* ============================================
+   * SHADOWS - Theme-aware
+   * ============================================ */
+
+  --shadow-elevation-1: light-dark(
+    var(--shadow-sm),
+    0 1px 3px 0 oklch(0 0 0 / 0.3),
+    0 1px 2px -1px oklch(0 0 0 / 0.3)
+  );
+
+  --shadow-elevation-2: light-dark(
+    var(--shadow-md),
+    0 4px 6px -1px oklch(0 0 0 / 0.4),
+    0 2px 4px -2px oklch(0 0 0 / 0.4)
+  );
+
+  --shadow-elevation-3: light-dark(
+    var(--shadow-lg),
+    0 10px 15px -3px oklch(0 0 0 / 0.5),
+    0 4px 6px -4px oklch(0 0 0 / 0.5)
+  );
+
+  --shadow-elevation-4: light-dark(
+    var(--shadow-xl),
+    0 20px 25px -5px oklch(0 0 0 / 0.6),
+    0 8px 10px -6px oklch(0 0 0 / 0.6)
+  );
+
+  /* ============================================
+   * COMPONENT SPACING
+   * ============================================ */
+
+  /* Gap sizes for layout */
+  --gap-xs: var(--space-1); /* 4px */
+  --gap-sm: var(--space-2); /* 8px */
+  --gap-md: var(--space-4); /* 16px */
+  --gap-lg: var(--space-6); /* 24px */
+  --gap-xl: var(--space-8); /* 32px */
+  --gap-2xl: var(--space-12); /* 48px */
+
+  /* Padding for containers */
+  --padding-xs: var(--space-1);
+  --padding-sm: var(--space-2);
+  --padding-md: var(--space-4);
+  --padding-lg: var(--space-6);
+  --padding-xl: var(--space-8);
+
+  /* ============================================
+   * FOCUS RING
+   * ============================================ */
+
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-accent-500);
+  --focus-ring:
+    0 0 0 var(--focus-ring-offset) var(--surface-base),
+    0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+
+  /* ============================================
+   * SCROLLBAR
+   * ============================================ */
+
+  --scrollbar-thumb: light-dark(var(--color-gray-300), var(--color-gray-600));
+  --scrollbar-thumb-hover: light-dark(var(--color-gray-400), var(--color-gray-500));
+  --scrollbar-track: transparent;
+}

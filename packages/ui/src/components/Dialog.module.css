@@ -1,0 +1,160 @@
+/**
+ * Dialog - Modal content panel
+ *
+ * Centered modal with overlay backdrop.
+ * NO hard offset shadows - uses soft diffuse shadows.
+ */
+
+.trigger {
+  /* Allow trigger to be styled by consumer */
+}
+
+/* ============================================
+ * OVERLAY
+ * ============================================ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background-color: var(--surface-overlay);
+
+  /* Animation */
+  animation: overlay-in var(--duration-200) var(--ease-out);
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+ * CONTENT WRAPPER
+ * ============================================ */
+
+.contentWrapper {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+  background-color: var(--surface-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-elevation-4);
+
+  /* Animation */
+  animation: dialog-in var(--duration-200) var(--ease-out);
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+ * HEADER
+ * ============================================ */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+  padding: var(--space-6);
+  padding-bottom: var(--space-4);
+}
+
+/* ============================================
+ * TITLE
+ * ============================================ */
+
+.title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ============================================
+ * DESCRIPTION
+ * ============================================ */
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* ============================================
+ * FOOTER
+ * ============================================ */
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6) var(--space-6);
+}
+
+/* ============================================
+ * CLOSE BUTTON
+ * ============================================ */
+
+.close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  cursor: pointer;
+
+  /* Transitions */
+  transition:
+    background-color var(--duration-150) var(--ease-out),
+    color var(--duration-150) var(--ease-out);
+}
+
+.close:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.close:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

@@ -1,0 +1,60 @@
+/**
+ * Skeleton - Loading placeholder
+ */
+
+.root {
+  background-color: var(--surface-secondary);
+  border-radius: var(--radius-md);
+}
+
+/* ============================================
+ * VARIANTS
+ * ============================================ */
+
+/* Rectangle (default) */
+.root[data-variant="rectangle"] {
+  border-radius: var(--radius-md);
+}
+
+/* Circle */
+.root[data-variant="circle"] {
+  border-radius: var(--radius-full);
+}
+
+/* Text */
+.root[data-variant="text"] {
+  border-radius: var(--radius-sm);
+  height: 1em;
+}
+
+/* ============================================
+ * ANIMATION
+ * ============================================ */
+
+.root[data-animate="true"] {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 0%,
+    var(--surface-primary) 50%,
+    var(--surface-secondary) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .root[data-animate="true"] {
+    animation: none;
+    background: var(--surface-secondary);
+  }
+}

@@ -1,0 +1,381 @@
+/**
+ * Refined Utility Design System - Animations
+ *
+ * Keyframe animations and transition utilities.
+ * Respects prefers-reduced-motion for accessibility.
+ */
+
+/* ============================================
+ * KEYFRAME ANIMATIONS
+ * ============================================ */
+
+/* Fade In */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fade Out */
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Scale In (for modals, popovers) */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Scale Out */
+@keyframes scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Slide In from Top */
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide In from Bottom */
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide In from Left */
+@keyframes slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide In from Right */
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Slide Out to Top */
+@keyframes slide-out-to-top {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Slide Out to Bottom */
+@keyframes slide-out-to-bottom {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Drawer slide animations */
+@keyframes drawer-slide-in-from-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-slide-in-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-slide-in-from-top {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-slide-in-from-bottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Spin (for loading spinners) */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pulse (subtle attention) */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Bounce (playful attention) */
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(-5%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+}
+
+/* Shake (error feedback) */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* Skeleton shimmer */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Progress bar indeterminate */
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Accordion expand/collapse */
+@keyframes accordion-expand {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--accordion-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes accordion-collapse {
+  from {
+    height: var(--accordion-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+/* Toast enter/exit */
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%) scale(0.95);
+  }
+}
+
+/* ============================================
+ * ANIMATION UTILITY CLASSES
+ * ============================================ */
+
+:root {
+  /* Animation duration variables */
+  --animation-duration-fast: var(--duration-150);
+  --animation-duration-normal: var(--duration-200);
+  --animation-duration-slow: var(--duration-300);
+
+  /* Animation easing variables */
+  --animation-ease-default: var(--ease-out);
+  --animation-ease-bounce: var(--ease-spring);
+}
+
+/* ============================================
+ * REDUCED MOTION
+ * ============================================
+ * Respect user's motion preferences
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
+  }
+}
+
+/* ============================================
+ * ANIMATION DATA ATTRIBUTES
+ * ============================================
+ * Use these on elements to apply animations
+ */
+
+[data-animate="fade-in"] {
+  animation: fade-in var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="fade-out"] {
+  animation: fade-out var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="scale-in"] {
+  animation: scale-in var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="scale-out"] {
+  animation: scale-out var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="slide-in-top"] {
+  animation: slide-in-from-top var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="slide-in-bottom"] {
+  animation: slide-in-from-bottom var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="slide-in-left"] {
+  animation: slide-in-from-left var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="slide-in-right"] {
+  animation: slide-in-from-right var(--animation-duration-normal) var(--animation-ease-default);
+}
+
+[data-animate="spin"] {
+  animation: spin 1s linear infinite;
+}
+
+[data-animate="pulse"] {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+[data-animate="bounce"] {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+[data-animate="shake"] {
+  animation: shake 0.5s ease-in-out;
+}
+
+[data-animate="shimmer"] {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface-secondary) 0%,
+    var(--surface-primary) 50%,
+    var(--surface-secondary) 100%
+  );
+  background-size: 200% 100%;
+}

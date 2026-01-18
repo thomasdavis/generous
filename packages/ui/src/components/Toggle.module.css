@@ -1,0 +1,125 @@
+/**
+ * Toggle - Two-state button
+ *
+ * Visual feedback for on/off states.
+ * Uses accent color when pressed.
+ */
+
+.root {
+  /* Layout */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Sizing */
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+
+  /* Typography */
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+
+  /* Default state */
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+
+  /* Interaction */
+  cursor: pointer;
+  user-select: none;
+
+  /* Transitions */
+  transition:
+    background-color var(--duration-150) var(--ease-out),
+    color var(--duration-150) var(--ease-out),
+    border-color var(--duration-150) var(--ease-out);
+}
+
+/* Focus */
+.root:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.root:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Hover (not pressed) */
+.root[data-state="off"]:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* ============================================
+ * PRESSED STATE
+ * ============================================ */
+
+.root[data-state="on"] {
+  background-color: var(--surface-active);
+  color: var(--text-primary);
+}
+
+.root[data-state="on"]:hover:not(:disabled) {
+  background-color: var(--surface-secondary);
+}
+
+/* ============================================
+ * VARIANTS
+ * ============================================ */
+
+/* Default variant */
+.root[data-variant="default"] {
+  /* Uses above styles */
+}
+
+/* Outline variant */
+.root[data-variant="outline"] {
+  border-color: var(--border-default);
+}
+
+.root[data-variant="outline"][data-state="off"]:hover:not(:disabled) {
+  border-color: var(--border-strong);
+}
+
+.root[data-variant="outline"][data-state="on"] {
+  border-color: var(--border-strong);
+  background-color: var(--surface-secondary);
+}
+
+/* ============================================
+ * SIZES
+ * ============================================ */
+
+.root[data-size="sm"] {
+  padding: var(--space-1-5);
+  border-radius: var(--radius-md);
+}
+
+.root[data-size="md"] {
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+}
+
+.root[data-size="lg"] {
+  padding: var(--space-2-5);
+  border-radius: var(--radius-lg);
+}
+
+/* Icon sizing */
+.root svg {
+  width: 16px;
+  height: 16px;
+}
+
+.root[data-size="sm"] svg {
+  width: 14px;
+  height: 14px;
+}
+
+.root[data-size="lg"] svg {
+  width: 20px;
+  height: 20px;
+}

@@ -1,0 +1,111 @@
+/**
+ * Table - Data display in rows and columns
+ */
+
+.wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.root {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+/* ============================================
+ * HEADER
+ * ============================================ */
+
+.header {
+  border-bottom: 1px solid var(--border-default);
+}
+
+/* ============================================
+ * BODY
+ * ============================================ */
+
+.body {
+  /* Default body styles */
+}
+
+/* ============================================
+ * FOOTER
+ * ============================================ */
+
+.footer {
+  border-top: 1px solid var(--border-default);
+  background-color: var(--surface-primary);
+}
+
+/* ============================================
+ * ROW
+ * ============================================ */
+
+.row {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--duration-100) var(--ease-out);
+}
+
+.body .row:hover {
+  background-color: var(--surface-hover);
+}
+
+.body .row:last-child {
+  border-bottom: none;
+}
+
+/* Selected row state */
+.row[data-selected="true"] {
+  background-color: var(--surface-active);
+}
+
+/* ============================================
+ * HEAD
+ * ============================================ */
+
+.head {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* Sortable header */
+.head[data-sortable="true"] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.head[data-sortable="true"]:hover {
+  background-color: var(--surface-hover);
+}
+
+/* ============================================
+ * CELL
+ * ============================================ */
+
+.cell {
+  padding: var(--space-3) var(--space-4);
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+/* Numeric alignment */
+.cell[data-numeric="true"] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+ * CAPTION
+ * ============================================ */
+
+.caption {
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  text-align: left;
+  caption-side: bottom;
+}

@@ -1,0 +1,78 @@
+/**
+ * Breadcrumb - Hierarchical navigation
+ */
+
+.root {
+  /* Allow consumers to add additional styles */
+}
+
+/* ============================================
+ * LIST
+ * ============================================ */
+
+.list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* ============================================
+ * ITEM
+ * ============================================ */
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* ============================================
+ * LINK
+ * ============================================ */
+
+.link {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  transition: color var(--duration-150) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--text-primary);
+}
+
+.link:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+ * PAGE (Current)
+ * ============================================ */
+
+.page {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* ============================================
+ * SEPARATOR
+ * ============================================ */
+
+.separator {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+}
+
+.chevron {
+  width: 14px;
+  height: 14px;
+}

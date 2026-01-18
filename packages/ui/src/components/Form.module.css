@@ -1,0 +1,211 @@
+/**
+ * Form - Form layout and validation
+ *
+ * Design: Clean layout, clear error states, accessible.
+ */
+
+/* ============================================
+ * ROOT
+ * ============================================ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ============================================
+ * FIELD
+ * ============================================ */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Horizontal layout */
+.field[data-orientation="horizontal"] {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.field[data-orientation="horizontal"] .label {
+  min-width: 120px;
+  padding-top: var(--space-2-5);
+}
+
+/* ============================================
+ * LABEL
+ * ============================================ */
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* Required indicator */
+.label[data-required="true"]::after {
+  content: " *";
+  color: var(--text-error);
+}
+
+/* ============================================
+ * CONTROL
+ * ============================================ */
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-5);
+  flex: 1;
+}
+
+/* ============================================
+ * DESCRIPTION
+ * ============================================ */
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ============================================
+ * MESSAGE (Error/Success)
+ * ============================================ */
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1-5);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.message[data-variant="error"] {
+  color: var(--text-error);
+}
+
+.message[data-variant="success"] {
+  color: var(--text-success);
+}
+
+.message[data-variant="warning"] {
+  color: var(--text-warning);
+}
+
+.messageIcon {
+  flex-shrink: 0;
+  width: var(--space-4);
+  height: var(--space-4);
+  margin-top: 1px;
+}
+
+/* ============================================
+ * SUBMIT
+ * ============================================ */
+
+.submit {
+  align-self: flex-start;
+}
+
+.submit[data-full-width="true"] {
+  align-self: stretch;
+}
+
+/* ============================================
+ * FIELDSET
+ * ============================================ */
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background-color: var(--surface-primary);
+}
+
+/* ============================================
+ * LEGEND
+ * ============================================ */
+
+.legend {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  padding: 0 var(--space-2);
+  margin-left: calc(-1 * var(--space-2));
+}
+
+/* ============================================
+ * ACTIONS
+ * ============================================ */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.actions[data-align="start"] {
+  justify-content: flex-start;
+}
+
+.actions[data-align="center"] {
+  justify-content: center;
+}
+
+.actions[data-align="end"] {
+  justify-content: flex-end;
+}
+
+.actions[data-align="between"] {
+  justify-content: space-between;
+}
+
+/* ============================================
+ * DIVIDER
+ * ============================================ */
+
+.divider {
+  height: 1px;
+  background-color: var(--border-subtle);
+  margin: var(--space-2) 0;
+}
+
+/* ============================================
+ * DISABLED STATE
+ * ============================================ */
+
+.root[data-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.field[data-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ============================================
+ * LOADING STATE
+ * ============================================ */
+
+.root[data-loading="true"] {
+  position: relative;
+}
+
+.root[data-loading="true"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--surface-base);
+  opacity: 0.5;
+  cursor: wait;
+}

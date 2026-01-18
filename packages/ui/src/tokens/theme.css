@@ -1,0 +1,101 @@
+/**
+ * Refined Utility Design System - Theme Configuration
+ *
+ * Handles theme switching via data attributes and system preferences.
+ * Supports: light, dark, and system (auto) themes.
+ */
+
+/* ============================================
+ * THEME SWITCHING
+ * ============================================ */
+
+/* Default: Follow system preference (already handled by light-dark()) */
+:root {
+  color-scheme: light dark;
+}
+
+/* Force light mode */
+:root[data-theme="light"],
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* Force dark mode */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* ============================================
+ * THEME-SPECIFIC OVERRIDES
+ * ============================================
+ * Use these for cases where light-dark() isn't sufficient
+ */
+
+/* Light theme specific */
+:root[data-theme="light"] {
+  --surface-base: var(--color-white);
+  --surface-primary: var(--color-gray-50);
+  --surface-secondary: var(--color-gray-100);
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-600);
+  --border-default: var(--color-gray-200);
+}
+
+/* Dark theme specific */
+:root[data-theme="dark"] {
+  --surface-base: var(--color-gray-900);
+  --surface-primary: var(--color-gray-800);
+  --surface-secondary: var(--color-gray-700);
+  --text-primary: var(--color-gray-50);
+  --text-secondary: var(--color-gray-400);
+  --border-default: var(--color-gray-700);
+}
+
+/* ============================================
+ * MEDIA QUERY BASED THEME
+ * ============================================
+ * Fallback for browsers that don't support light-dark()
+ */
+
+@supports not (color: light-dark(red, blue)) {
+  /* Light mode (default) */
+  :root {
+    --surface-base: var(--color-white);
+    --surface-primary: var(--color-gray-50);
+    --text-primary: var(--color-gray-900);
+    --text-secondary: var(--color-gray-600);
+    --border-default: var(--color-gray-200);
+  }
+
+  /* Dark mode via media query */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface-base: var(--color-gray-900);
+      --surface-primary: var(--color-gray-800);
+      --text-primary: var(--color-gray-50);
+      --text-secondary: var(--color-gray-400);
+      --border-default: var(--color-gray-700);
+    }
+  }
+}
+
+/* ============================================
+ * TRANSITION FOR THEME CHANGES
+ * ============================================ */
+
+/* Smooth transition when theme changes */
+:root[data-theme-transition] * {
+  transition:
+    background-color var(--duration-200) var(--ease-out),
+    border-color var(--duration-200) var(--ease-out),
+    color var(--duration-150) var(--ease-out);
+}
+
+/* Disable transitions for elements that shouldn't animate */
+:root[data-theme-transition] img,
+:root[data-theme-transition] video,
+:root[data-theme-transition] svg,
+:root[data-theme-transition] canvas {
+  transition: none;
+}

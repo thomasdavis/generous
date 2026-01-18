@@ -1,0 +1,68 @@
+/**
+ * ScrollArea - Custom scrollable container
+ *
+ * Uses native scrollbar styling from reset.css
+ */
+
+.root {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================
+ * VIEWPORT
+ * ============================================ */
+
+.viewport {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* Vertical scrolling */
+.root[data-orientation="vertical"] .viewport {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Horizontal scrolling */
+.root[data-orientation="horizontal"] .viewport {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Both directions */
+.root[data-orientation="both"] .viewport {
+  overflow: auto;
+}
+
+/* ============================================
+ * SCROLLBAR VISIBILITY
+ * ============================================ */
+
+/* Auto - scrollbar appears when needed */
+.root[data-scrollbars="auto"] .viewport {
+  scrollbar-width: thin;
+}
+
+/* Always show scrollbar */
+.root[data-scrollbars="always"] .viewport {
+  scrollbar-width: thin;
+}
+
+/* Show only on hover */
+.root[data-scrollbars="hover"] .viewport {
+  scrollbar-width: none;
+}
+
+.root[data-scrollbars="hover"] .viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.root[data-scrollbars="hover"]:hover .viewport {
+  scrollbar-width: thin;
+}
+
+.root[data-scrollbars="hover"]:hover .viewport::-webkit-scrollbar {
+  display: block;
+}
