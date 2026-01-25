@@ -4,9 +4,18 @@ import { useChat } from "@ai-sdk/react";
 import { Badge, Button } from "@generous/ui";
 import { DefaultChatTransport } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { useAppState } from "@/lib/app-state";
+import {
+  type ChatMessage,
+  getChatMessageCount,
+  getRecentChatHistory,
+  saveChatMessages,
+} from "@/lib/db";
 import styles from "./Chat.module.css";
 import { ToolResultRenderer } from "./ToolResultRenderer";
+
+const MESSAGES_PER_PAGE = 30;
 
 interface ComponentToolOutput {
   _isComponent: true;
@@ -84,17 +93,56 @@ function ToolPartHandler({
           <span>Added "{output.name}" to your dashboard</span>
         </div>
       );
-    } else {
-      return (
-        <div className={styles.toolCall} style={{ color: "#ef4444" }}>
-          <span>Failed to create component: {output.error}</span>
-        </div>
-      );
     }
+    return (
+      <div className={styles.toolCall} style={{ color: "#ef4444" }}>
+        <span>Failed to create component: {output.error}</span>
+      </div>
+    );
   }
 
   // Use json-render for other tool results
   return <ToolResultRenderer toolName={toolName} toolData={output} />;
+}
+
+// Message component for rendering a single message
+function MessageItem({
+  message,
+  onComponentCreated,
+}: {
+  message: ChatMessage | { id: string; role: string; parts?: unknown[] };
+  onComponentCreated: (output: ComponentToolOutput) => void;
+}) {
+  const parts = "parts" in message ? message.parts : undefined;
+  const content = "content" in message ? message.content : undefined;
+
+  return (
+    <div className={styles.message} data-role={message.role}>
+      {parts?.map((part: unknown, i: number) => {
+        const p = part as { type?: string; text?: string };
+        if (p.type === "text" && p.text) {
+          return (
+            <div key={i} className={styles.messageContent}>
+              {p.text}
+            </div>
+          );
+        }
+        if (p.type?.startsWith("tool-")) {
+          const toolName = p.type.replace("tool-", "");
+          return (
+            <ToolPartHandler
+              key={i}
+              part={part as ToolPart}
+              toolName={toolName}
+              onComponentCreated={onComponentCreated}
+            />
+          );
+        }
+        return null;
+      })}
+      {!parts && content && <div className={styles.messageContent}>{content}</div>}
+    </div>
+  );
 }
 
 export function Chat() {
@@ -106,20 +154,124 @@ export function Chat() {
 
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loadedHistory, setLoadedHistory] = useState<ChatMessage[]>([]);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const isLoading = status === "streaming" || status === "submitted";
   const addedComponents = useRef<Set<string>>(new Set());
+  const savedMessageIds = useRef<Set<string>>(new Set());
+
+  // All messages combined (history + current session)
+  const allMessages = useMemo(() => {
+    // Filter out history messages that are now in the current messages
+    const currentIds = new Set(messages.map((m) => m.id));
+    const filteredHistory = loadedHistory.filter((m) => !currentIds.has(m.id));
+    return [...filteredHistory, ...messages];
+  }, [loadedHistory, messages]);
+
+  // Load initial chat history
+  useEffect(() => {
+    async function loadInitialHistory() {
+      try {
+        const count = await getChatMessageCount();
+        const history = await getRecentChatHistory(MESSAGES_PER_PAGE);
+        setLoadedHistory(history);
+        setHasMore(count > history.length);
+        setInitialLoadDone(true);
+
+        // Mark these as already saved
+        for (const msg of history) {
+          savedMessageIds.current.add(msg.id);
+        }
+      } catch (err) {
+        console.error("Failed to load chat history:", err);
+        setInitialLoadDone(true);
+      }
+    }
+    loadInitialHistory();
+  }, []);
+
+  // Save new messages to IndexedDB
+  useEffect(() => {
+    async function saveNewMessages() {
+      const newMessages: ChatMessage[] = [];
+
+      for (const msg of messages) {
+        if (!savedMessageIds.current.has(msg.id)) {
+          // Convert to our ChatMessage format
+          const chatMsg: ChatMessage = {
+            id: msg.id,
+            role: msg.role as "user" | "assistant",
+            content:
+              msg.parts
+                ?.filter((p) => typeof p === "object" && p !== null && "text" in p)
+                .map((p) => (p as { text: string }).text)
+                .join("") || "",
+            parts: msg.parts,
+            createdAt: Date.now(),
+          };
+          newMessages.push(chatMsg);
+          savedMessageIds.current.add(msg.id);
+        }
+      }
+
+      if (newMessages.length > 0) {
+        await saveChatMessages(newMessages);
+      }
+    }
+
+    // Only save when not streaming
+    if (status === "ready" && messages.length > 0) {
+      saveNewMessages();
+    }
+  }, [messages, status]);
+
+  // Load more history when scrolling up
+  const loadMoreHistory = useCallback(async () => {
+    if (isLoadingMore || !hasMore || loadedHistory.length === 0) return;
+
+    const oldestMessage = loadedHistory[0];
+    if (!oldestMessage) return;
+
+    setIsLoadingMore(true);
+    try {
+      const olderMessages = await getRecentChatHistory(MESSAGES_PER_PAGE, oldestMessage.createdAt);
+
+      if (olderMessages.length === 0) {
+        setHasMore(false);
+      } else {
+        // Mark as saved
+        for (const msg of olderMessages) {
+          savedMessageIds.current.add(msg.id);
+        }
+        setLoadedHistory((prev) => [...olderMessages, ...prev]);
+        setHasMore(olderMessages.length === MESSAGES_PER_PAGE);
+      }
+    } catch (err) {
+      console.error("Failed to load more history:", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, hasMore, loadedHistory]);
 
   const copyMessagesJson = async () => {
-    await navigator.clipboard.writeText(JSON.stringify(messages, null, 2));
+    await navigator.clipboard.writeText(JSON.stringify(allMessages, null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll on message changes
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length]);
+    if (messages.length > 0 && virtuosoRef.current) {
+      virtuosoRef.current.scrollToIndex({
+        index: allMessages.length - 1,
+        behavior: "smooth",
+      });
+    }
+  }, [messages.length, allMessages.length]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,6 +296,28 @@ export function Chat() {
     [addComponent],
   );
 
+  if (!initialLoadDone) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <span className="drag-handle" style={{ cursor: "grab" }}>
+            <span className={styles.headerTitle}>
+              Chat
+              <Badge variant="accent" size="sm">
+                AI
+              </Badge>
+            </span>
+          </span>
+        </div>
+        <div className={styles.messages}>
+          <div className={styles.empty}>
+            <span className={styles.emptyText}>Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -156,7 +330,7 @@ export function Chat() {
           </span>
         </span>
         <div style={{ display: "flex", gap: "4px" }}>
-          {messages.length > 0 && (
+          {allMessages.length > 0 && (
             <Button variant="ghost" size="sm" onClick={copyMessagesJson}>
               {copied ? "Copied!" : "Copy JSON"}
             </Button>
@@ -170,7 +344,7 @@ export function Chat() {
       </div>
 
       <div className={styles.messages}>
-        {messages.length === 0 ? (
+        {allMessages.length === 0 ? (
           <div className={styles.empty}>
             <svg
               className={styles.emptyIcon}
@@ -189,43 +363,39 @@ export function Chat() {
             <span className={styles.emptyText}>Try: "Build me a weather widget for Tokyo"</span>
           </div>
         ) : (
-          <>
-            {messages.map((message) => (
-              <div key={message.id} className={styles.message} data-role={message.role}>
-                {message.parts?.map((part, i) => {
-                  if (part.type === "text" && part.text) {
-                    return (
-                      <div key={i} className={styles.messageContent}>
-                        {part.text}
-                      </div>
-                    );
-                  }
-                  if (part.type?.startsWith("tool-")) {
-                    const toolName = part.type.replace("tool-", "");
-                    return (
-                      <ToolPartHandler
-                        key={i}
-                        part={part}
-                        toolName={toolName}
-                        onComponentCreated={handleComponentCreated}
-                      />
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            ))}
-            {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-              <div className={styles.loading}>
-                <div className={styles.loadingDots}>
-                  <span className={styles.loadingDot} />
-                  <span className={styles.loadingDot} />
-                  <span className={styles.loadingDot} />
-                </div>
-              </div>
+          <Virtuoso
+            ref={virtuosoRef}
+            style={{ height: "100%" }}
+            data={allMessages}
+            startReached={loadMoreHistory}
+            initialTopMostItemIndex={allMessages.length - 1}
+            followOutput="smooth"
+            components={{
+              Header: () =>
+                isLoadingMore ? (
+                  <div className={styles.loadingMore}>Loading more...</div>
+                ) : hasMore ? (
+                  <div className={styles.loadingMore}>Scroll up for more</div>
+                ) : null,
+              Footer: () =>
+                isLoading && messages[messages.length - 1]?.role !== "assistant" ? (
+                  <div className={styles.loading}>
+                    <div className={styles.loadingDots}>
+                      <span className={styles.loadingDot} />
+                      <span className={styles.loadingDot} />
+                      <span className={styles.loadingDot} />
+                    </div>
+                  </div>
+                ) : null,
+            }}
+            itemContent={(_index, message) => (
+              <MessageItem
+                key={message.id}
+                message={message}
+                onComponentCreated={handleComponentCreated}
+              />
             )}
-            <div ref={messagesEndRef} />
-          </>
+          />
         )}
       </div>
 

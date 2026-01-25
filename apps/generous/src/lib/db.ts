@@ -92,6 +92,47 @@ export async function getChatHistory(): Promise<ChatMessage[]> {
   return db.getAllFromIndex("chatHistory", "by-created");
 }
 
+// Get recent chat messages (newest first, with pagination)
+export async function getRecentChatHistory(
+  limit: number,
+  beforeTimestamp?: number,
+): Promise<ChatMessage[]> {
+  const db = await getDB();
+  const tx = db.transaction("chatHistory", "readonly");
+  const index = tx.store.index("by-created");
+
+  const messages: ChatMessage[] = [];
+
+  // Use a cursor to iterate in reverse order (newest first)
+  const range = beforeTimestamp ? IDBKeyRange.upperBound(beforeTimestamp, true) : undefined;
+
+  let cursor = await index.openCursor(range, "prev");
+
+  while (cursor && messages.length < limit) {
+    messages.push(cursor.value);
+    cursor = await cursor.continue();
+  }
+
+  // Reverse to get chronological order for display
+  return messages.reverse();
+}
+
+// Get total count of chat messages
+export async function getChatMessageCount(): Promise<number> {
+  const db = await getDB();
+  return db.count("chatHistory");
+}
+
+// Save multiple chat messages at once
+export async function saveChatMessages(messages: ChatMessage[]): Promise<void> {
+  const db = await getDB();
+  const tx = db.transaction("chatHistory", "readwrite");
+  for (const msg of messages) {
+    await tx.store.put(msg);
+  }
+  await tx.done;
+}
+
 export async function clearChatHistory(): Promise<void> {
   const db = await getDB();
   await db.clear("chatHistory");

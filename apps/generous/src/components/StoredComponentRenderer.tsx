@@ -1,6 +1,7 @@
 "use client";
 
 import { ActionProvider, DataProvider, Renderer, VisibilityProvider } from "@json-render/react";
+import { useCallback, useState } from "react";
 import { useAppState } from "@/lib/app-state";
 import type { StoredComponent } from "@/lib/db";
 import { toolRegistry } from "./tool-registry";
@@ -17,8 +18,17 @@ interface StoredComponentRendererProps {
 
 export function StoredComponentRenderer({ component }: StoredComponentRendererProps) {
   const { removeComponent } = useAppState();
+  const [showJson, setShowJson] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const tree = component.tree as UITree | null;
+
+  const copyJson = useCallback(async () => {
+    const json = JSON.stringify({ tree: component.tree, jsonl: component.jsonl }, null, 2);
+    await navigator.clipboard.writeText(json);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [component]);
 
   if (!tree) {
     return (
@@ -34,25 +44,44 @@ export function StoredComponentRenderer({ component }: StoredComponentRendererPr
         <span style={styles.title} className="drag-handle">
           {component.name}
         </span>
-        <button
-          type="button"
-          style={styles.closeBtn}
-          onClick={() => removeComponent(component.id)}
-          title="Remove component"
-        >
-          ×
-        </button>
+        <div style={styles.headerActions}>
+          <button
+            type="button"
+            style={styles.headerBtn}
+            onClick={() => setShowJson(!showJson)}
+            title={showJson ? "Hide JSON" : "Show JSON"}
+          >
+            {showJson ? "Hide" : "JSON"}
+          </button>
+          <button type="button" style={styles.headerBtn} onClick={copyJson} title="Copy JSON">
+            {copied ? "Copied!" : "Copy"}
+          </button>
+          <button
+            type="button"
+            style={styles.closeBtn}
+            onClick={() => removeComponent(component.id)}
+            title="Remove component"
+          >
+            ×
+          </button>
+        </div>
       </div>
-      <div style={styles.content}>
-        <DataProvider initialData={{}}>
-          <VisibilityProvider>
-            <ActionProvider handlers={{}}>
-              {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
-              <Renderer tree={tree as any} registry={toolRegistry} loading={false} />
-            </ActionProvider>
-          </VisibilityProvider>
-        </DataProvider>
-      </div>
+      {showJson ? (
+        <div style={styles.jsonView}>
+          <pre style={styles.jsonPre}>{JSON.stringify(component.tree, null, 2)}</pre>
+        </div>
+      ) : (
+        <div style={styles.content}>
+          <DataProvider initialData={{}}>
+            <VisibilityProvider>
+              <ActionProvider handlers={{}}>
+                {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
+                <Renderer tree={tree as any} registry={toolRegistry} loading={false} />
+              </ActionProvider>
+            </VisibilityProvider>
+          </DataProvider>
+        </div>
+      )}
     </div>
   );
 }
@@ -82,6 +111,20 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "grab",
     flex: 1,
   },
+  headerActions: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  },
+  headerBtn: {
+    background: "transparent",
+    border: "1px solid #3f3f46",
+    borderRadius: 4,
+    color: "#71717a",
+    fontSize: 11,
+    cursor: "pointer",
+    padding: "2px 6px",
+  },
   closeBtn: {
     background: "transparent",
     border: "none",
@@ -95,6 +138,18 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     padding: 12,
     overflow: "auto",
+  },
+  jsonView: {
+    flex: 1,
+    overflow: "auto",
+    padding: 8,
+  },
+  jsonPre: {
+    margin: 0,
+    fontSize: 10,
+    color: "#a3e635",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
   },
   error: {
     height: "100%",
