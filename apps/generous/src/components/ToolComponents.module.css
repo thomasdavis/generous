@@ -1,0 +1,251 @@
+/* Stock Card */
+.stockCard {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.stockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stockSymbol {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.stockPrice {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.priceValue {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.priceUp {
+  font-size: var(--text-sm);
+  color: var(--color-green-500);
+}
+
+.priceDown {
+  font-size: var(--text-sm);
+  color: var(--color-red-500);
+}
+
+.sparkline {
+  height: 40px;
+  width: 100%;
+}
+
+.sparkline svg {
+  width: 100%;
+  height: 100%;
+}
+
+.stockStats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.stockStat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Weather Card */
+.weatherCard {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-radius: 12px;
+  padding: 12px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.weatherMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.weatherIcon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.weatherIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.weatherInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.weatherLocation {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.weatherTemp {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.weatherCondition {
+  font-size: 14px;
+  opacity: 0.9;
+  text-transform: capitalize;
+}
+
+.weatherDetails {
+  display: flex;
+  gap: 16px;
+}
+
+.weatherDetail {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.detailIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.forecast {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.forecastDay {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.forecastLabel {
+  opacity: 0.8;
+}
+
+.forecastHigh {
+  font-weight: 600;
+}
+
+.forecastLow {
+  opacity: 0.7;
+}
+
+/* Search Results */
+.searchCard {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.searchHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.searchQuery {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.searchCount {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.searchResults {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.searchResult {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--duration-150) var(--ease-out);
+}
+
+.searchResult:hover {
+  background: var(--surface-hover);
+}
+
+.resultTitle {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-blue-500);
+}
+
+.resultUrl {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resultSnippet {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
