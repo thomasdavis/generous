@@ -238,6 +238,11 @@ function Dashboard() {
               Design System
             </a>
           </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <a href="/styleguide/catalog" target="_blank" rel="noopener noreferrer">
+              Component Catalog
+            </a>
+          </Button>
           <Button variant="ghost" size="sm" onClick={handleExport}>
             {copied ? "Copied!" : "Export State"}
           </Button>
