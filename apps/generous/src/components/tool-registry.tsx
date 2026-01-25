@@ -1,6 +1,100 @@
 "use client";
 
 import type { ComponentRenderProps } from "@json-render/react";
+import { useDataValue } from "@json-render/react";
+
+// Button Component - triggers actions
+export function Button({ element, onAction }: ComponentRenderProps) {
+  const { label, action, variant, size } = element.props as {
+    label: string;
+    action?: { name: string; params?: Record<string, unknown> };
+    variant?: string | null;
+    size?: string | null;
+  };
+
+  const sizeMap = {
+    sm: { padding: "4px 8px", fontSize: 12 },
+    md: { padding: "8px 16px", fontSize: 14 },
+    lg: { padding: "12px 24px", fontSize: 16 },
+  };
+  const s = sizeMap[(size as keyof typeof sizeMap) || "md"];
+
+  const variantStyles: Record<string, React.CSSProperties> = {
+    primary: { background: "#3b82f6", color: "white", border: "none" },
+    secondary: { background: "#e0e0e0", color: "#333", border: "none" },
+    outline: { background: "transparent", color: "#3b82f6", border: "1px solid #3b82f6" },
+    danger: { background: "#ef4444", color: "white", border: "none" },
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={() => action && onAction?.(action)}
+      style={{
+        ...s,
+        borderRadius: 6,
+        cursor: "pointer",
+        fontWeight: 500,
+        ...variantStyles[variant || "primary"],
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+// InteractiveCard - reads color from data path and triggers toggle action
+export function InteractiveCard({ element, children, onAction }: ComponentRenderProps) {
+  const { title, colorPath, action, padding } = element.props as {
+    title?: string | null;
+    colorPath?: string | null;
+    action?: { name: string; params?: Record<string, unknown> };
+    padding?: string | null;
+  };
+
+  // Read color from data context if colorPath provided
+  const dataColor = useDataValue(colorPath || "");
+  const color = typeof dataColor === "string" ? dataColor : null;
+
+  const paddingMap = { sm: 8, md: 12, lg: 16 };
+  const p = paddingMap[(padding as keyof typeof paddingMap) || "md"];
+
+  const colorStyles: Record<string, React.CSSProperties> = {
+    blue: { background: "linear-gradient(135deg, #3b82f6, #2563eb)", color: "white" },
+    green: { background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "white" },
+    red: { background: "linear-gradient(135deg, #ef4444, #dc2626)", color: "white" },
+    purple: { background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", color: "white" },
+    orange: { background: "linear-gradient(135deg, #f97316, #ea580c)", color: "white" },
+    yellow: { background: "linear-gradient(135deg, #eab308, #ca8a04)", color: "white" },
+    pink: { background: "linear-gradient(135deg, #ec4899, #db2777)", color: "white" },
+    teal: { background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" },
+    default: { background: "#f5f5f5", border: "1px solid #e0e0e0" },
+  };
+
+  const style = colorStyles[color || "default"];
+
+  return (
+    <div
+      onClick={() => action && onAction?.(action)}
+      onKeyDown={(e) => e.key === "Enter" && action && onAction?.(action)}
+      role={action ? "button" : undefined}
+      tabIndex={action ? 0 : undefined}
+      style={{
+        borderRadius: 12,
+        padding: p,
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        cursor: action ? "pointer" : "default",
+        transition: "transform 0.15s, box-shadow 0.15s",
+        ...style,
+      }}
+    >
+      {title && <div style={{ fontWeight: 600, fontSize: 14 }}>{title}</div>}
+      {children}
+    </div>
+  );
+}
 
 // Card Component
 export function Card({ element, children }: ComponentRenderProps) {
@@ -471,6 +565,8 @@ export function Calculation({ element }: ComponentRenderProps) {
 
 // Export registry
 export const toolRegistry = {
+  Button,
+  InteractiveCard,
   Card,
   Grid,
   Stack,

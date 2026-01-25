@@ -10,6 +10,40 @@ import { z } from "zod";
 export const toolCatalog = createCatalog({
   name: "tool-ui",
   components: {
+    // Interactive Components
+    Button: {
+      props: z.object({
+        label: z.string(),
+        action: z
+          .object({
+            name: z.string(),
+            params: z.record(z.string(), z.unknown()).optional(),
+          })
+          .optional(),
+        variant: z.enum(["primary", "secondary", "outline", "danger"]).nullable(),
+        size: z.enum(["sm", "md", "lg"]).nullable(),
+      }),
+      description:
+        "Clickable button that triggers an action. Available actions: set, toggleColor, increment, toggle",
+    },
+
+    InteractiveCard: {
+      props: z.object({
+        title: z.string().nullable(),
+        colorPath: z.string().nullable(),
+        action: z
+          .object({
+            name: z.string(),
+            params: z.record(z.string(), z.unknown()).optional(),
+          })
+          .optional(),
+        padding: z.enum(["sm", "md", "lg"]).nullable(),
+      }),
+      hasChildren: true,
+      description:
+        "Card that reads its color from a data path and triggers an action on click. Use with toggleColor action.",
+    },
+
     // Layout
     Card: {
       props: z.object({
@@ -175,9 +209,23 @@ export const toolCatalog = createCatalog({
 
 // Generate a human-readable component list for the AI
 export const componentList = `
+INTERACTIVE COMPONENTS (for user interaction):
+Button: Clickable button with label, action, variant (primary|secondary|outline|danger), size.
+  - action: { name: "toggleColor"|"set"|"increment"|"toggle", params: { path: "/dataKey", ... } }
+InteractiveCard: Card that changes color on click. Props: title, colorPath, action, padding.
+  - colorPath: data path to read color from (e.g., "/card1Color")
+  - action: { name: "toggleColor", params: { path: "/card1Color" } }
+  - Colors: blue, green, red, purple, orange, yellow, pink, teal
+
+INITIAL DATA: For interactive components, include a "data" property in your tree:
+  {"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"green"}}
+
+LAYOUT COMPONENTS:
 Card: Container with optional title and variant (default|gradient|outline). Has children.
 Grid: Grid layout with columns (1-4) and gap (sm|md|lg). Has children.
 Stack: Flex layout with direction (horizontal|vertical), gap, align. Has children.
+
+DATA DISPLAY:
 Metric: Data display with label, value, unit, trend (up|down|neutral), trendValue, size.
 Sparkline: Inline chart with data (number array), color (green|red|blue|gray), height.
 ProgressBar: Progress with value, max, label, color (blue|green|yellow|red).
@@ -186,6 +234,8 @@ ForecastDay: Forecast with day, high, low, condition.
 PriceChange: Price change with change and changePercent numbers.
 StockStat: Stock stat with label and value strings.
 SearchResult: Search result with title, url, snippet.
+
+TYPOGRAPHY & STATUS:
 Heading: Heading with text and level (h1|h2|h3|h4).
 Text: Text with content, variant (body|caption|label), color (default|muted|success|warning|danger).
 Badge: Status badge with text and variant (default|success|warning|danger|info).

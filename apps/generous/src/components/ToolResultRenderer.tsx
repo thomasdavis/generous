@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionProvider, DataProvider, Renderer, VisibilityProvider } from "@json-render/react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./Chat.module.css";
 import { toolRegistry } from "./tool-registry";
 
@@ -9,7 +9,11 @@ import { toolRegistry } from "./tool-registry";
 interface UITree {
   root: string;
   elements: Record<string, unknown>;
+  data?: Record<string, unknown>;
 }
+
+// Color cycle for toggle actions
+const colorCycle = ["blue", "green", "red", "purple", "orange", "yellow", "pink", "teal"];
 
 const debugStyles = {
   container: {
@@ -65,6 +69,7 @@ interface ToolResultRendererProps {
 function parseJSONLToTree(jsonl: string): UITree | null {
   const lines = jsonl.trim().split("\n").filter(Boolean);
   let root: string | null = null;
+  let data: Record<string, unknown> | undefined;
   const elements: Record<string, unknown> = {};
 
   for (const line of lines) {
@@ -72,6 +77,8 @@ function parseJSONLToTree(jsonl: string): UITree | null {
       const patch = JSON.parse(line);
       if (patch.op === "set" && patch.path === "/root") {
         root = patch.value;
+      } else if (patch.op === "set" && patch.path === "/data") {
+        data = patch.value;
       } else if (patch.op === "add" && patch.path.startsWith("/elements/")) {
         const key = patch.path.replace("/elements/", "");
         elements[key] = patch.value;
@@ -85,7 +92,7 @@ function parseJSONLToTree(jsonl: string): UITree | null {
     return null;
   }
 
-  return { root, elements };
+  return { root, elements, data };
 }
 
 export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererProps) {
@@ -218,15 +225,72 @@ export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererPro
 
   return (
     <div style={{ marginTop: 8 }}>
-      <DataProvider initialData={{}}>
-        <VisibilityProvider>
-          <ActionProvider handlers={{}}>
-            {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
-            <Renderer tree={tree as any} registry={toolRegistry} loading={isLoading} />
-          </ActionProvider>
-        </VisibilityProvider>
-      </DataProvider>
+      <InteractiveTreeRenderer tree={tree} isLoading={isLoading} />
       {debugPanel}
     </div>
+  );
+}
+
+function InteractiveTreeRenderer({ tree, isLoading }: { tree: UITree; isLoading: boolean }) {
+  const [data, setData] = useState<Record<string, unknown>>(() => tree.data || {});
+
+  const handlers = useMemo(
+    () => ({
+      set: (params: { path?: string; value?: unknown }) => {
+        if (params.path) {
+          setData((prev) => {
+            const key = params.path?.replace(/^\//, "") || "";
+            return key ? { ...prev, [key]: params.value } : prev;
+          });
+        }
+      },
+      toggleColor: (params: { path?: string }) => {
+        if (params.path) {
+          setData((prev) => {
+            const key = params.path?.replace(/^\//, "") || "";
+            const currentColor = (prev[key] as string) || "blue";
+            const currentIndex = colorCycle.indexOf(currentColor);
+            const nextIndex = (currentIndex + 1) % colorCycle.length;
+            return { ...prev, [key]: colorCycle[nextIndex] };
+          });
+        }
+      },
+      increment: (params: { path?: string; by?: number }) => {
+        if (params.path) {
+          setData((prev) => {
+            const key = params.path?.replace(/^\//, "") || "";
+            const current = (prev[key] as number) || 0;
+            return { ...prev, [key]: current + (params.by || 1) };
+          });
+        }
+      },
+      toggle: (params: { path?: string }) => {
+        if (params.path) {
+          setData((prev) => {
+            const key = params.path?.replace(/^\//, "") || "";
+            return { ...prev, [key]: !prev[key] };
+          });
+        }
+      },
+    }),
+    [],
+  );
+
+  const handleDataChange = useCallback((path: string, value: unknown) => {
+    const key = path.replace(/^\//, "");
+    if (key) {
+      setData((prev) => ({ ...prev, [key]: value }));
+    }
+  }, []);
+
+  return (
+    <DataProvider initialData={data} onDataChange={handleDataChange}>
+      <VisibilityProvider>
+        <ActionProvider handlers={handlers}>
+          {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
+          <Renderer tree={tree as any} registry={toolRegistry} loading={isLoading} />
+        </ActionProvider>
+      </VisibilityProvider>
+    </DataProvider>
   );
 }

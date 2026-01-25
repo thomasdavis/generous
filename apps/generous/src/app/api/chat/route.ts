@@ -15,8 +15,21 @@ Output JSONL patches in this format:
 {"op":"set","path":"/root","value":"<root-element-key>"}
 {"op":"add","path":"/elements/<key>","value":{"type":"<ComponentName>","props":{...},"children":[...]}}
 
+For INTERACTIVE components (InteractiveCard, Button), also set initial data:
+{"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"green"}}
+
+Example of interactive cards that change color on click:
+{"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"red"}}
+{"op":"set","path":"/root","value":"stack1"}
+{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"horizontal","gap":"md"},"children":["card1","card2"]}}
+{"op":"add","path":"/elements/card1","value":{"type":"InteractiveCard","props":{"title":"Card 1","colorPath":"/card1Color","action":{"name":"toggleColor","params":{"path":"/card1Color"}}},"children":["text1"]}}
+{"op":"add","path":"/elements/text1","value":{"type":"Text","props":{"content":"Click to change color!"},"children":[]}}
+{"op":"add","path":"/elements/card2","value":{"type":"InteractiveCard","props":{"title":"Card 2","colorPath":"/card2Color","action":{"name":"toggleColor","params":{"path":"/card2Color"}}},"children":["text2"]}}
+{"op":"add","path":"/elements/text2","value":{"type":"Text","props":{"content":"Click me too!"},"children":[]}}
+
 Rules:
-- First line must set /root
+- First line should set /data if using interactive components
+- Then set /root
 - Each element needs a unique key
 - Children are arrays of element keys (strings)
 - Props must match the component schema exactly
@@ -149,11 +162,14 @@ const timerTool = tool({
 });
 
 // Helper to parse JSONL into a tree
-function parseJSONLToTree(
-  jsonl: string,
-): { root: string; elements: Record<string, unknown> } | null {
+function parseJSONLToTree(jsonl: string): {
+  root: string;
+  elements: Record<string, unknown>;
+  data?: Record<string, unknown>;
+} | null {
   const lines = jsonl.trim().split("\n").filter(Boolean);
   let root: string | null = null;
+  let data: Record<string, unknown> | undefined;
   const elements: Record<string, unknown> = {};
 
   for (const line of lines) {
@@ -161,6 +177,8 @@ function parseJSONLToTree(
       const patch = JSON.parse(line);
       if (patch.op === "set" && patch.path === "/root") {
         root = patch.value;
+      } else if (patch.op === "set" && patch.path === "/data") {
+        data = patch.value;
       } else if (patch.op === "add" && patch.path.startsWith("/elements/")) {
         const key = patch.path.replace("/elements/", "");
         elements[key] = patch.value;
@@ -174,7 +192,7 @@ function parseJSONLToTree(
     return null;
   }
 
-  return { root, elements };
+  return { root, elements, data };
 }
 
 const createComponentTool = tool({

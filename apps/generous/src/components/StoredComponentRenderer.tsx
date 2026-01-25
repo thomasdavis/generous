@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionProvider, DataProvider, Renderer, VisibilityProvider } from "@json-render/react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAppState } from "@/lib/app-state";
 import type { StoredComponent } from "@/lib/db";
 import { toolRegistry } from "./tool-registry";
@@ -10,10 +10,95 @@ import { toolRegistry } from "./tool-registry";
 interface UITree {
   root: string;
   elements: Record<string, unknown>;
+  data?: Record<string, unknown>;
 }
 
 interface StoredComponentRendererProps {
   component: StoredComponent;
+}
+
+// Color cycle for toggle actions
+const colorCycle = ["blue", "green", "red", "purple", "orange", "yellow", "pink", "teal"];
+
+function InteractiveRenderer({ tree }: { tree: UITree }) {
+  // Initialize state from tree.data or empty
+  const [data, setData] = useState<Record<string, unknown>>(() => tree.data || {});
+
+  // Action handlers that can update state
+  const handlers = useMemo(
+    () => ({
+      // Generic set action: { name: "set", params: { path: "/foo", value: "bar" } }
+      set: (params: { path?: string; value?: unknown }) => {
+        if (params.path) {
+          setData((prev) => {
+            const newData = { ...prev };
+            // Simple path handling for top-level keys like "/card1Color"
+            const key = params.path?.replace(/^\//, "") || "";
+            if (key) {
+              newData[key] = params.value;
+            }
+            return newData;
+          });
+        }
+      },
+      // Toggle color action: { name: "toggleColor", params: { path: "/card1Color" } }
+      toggleColor: (params: { path?: string }) => {
+        if (params.path) {
+          setData((prev) => {
+            const newData = { ...prev };
+            const key = params.path?.replace(/^\//, "") || "";
+            const currentColor = (newData[key] as string) || "blue";
+            const currentIndex = colorCycle.indexOf(currentColor);
+            const nextIndex = (currentIndex + 1) % colorCycle.length;
+            newData[key] = colorCycle[nextIndex];
+            return newData;
+          });
+        }
+      },
+      // Increment action: { name: "increment", params: { path: "/count", by: 1 } }
+      increment: (params: { path?: string; by?: number }) => {
+        if (params.path) {
+          setData((prev) => {
+            const newData = { ...prev };
+            const key = params.path?.replace(/^\//, "") || "";
+            const current = (newData[key] as number) || 0;
+            newData[key] = current + (params.by || 1);
+            return newData;
+          });
+        }
+      },
+      // Toggle boolean: { name: "toggle", params: { path: "/isOpen" } }
+      toggle: (params: { path?: string }) => {
+        if (params.path) {
+          setData((prev) => {
+            const newData = { ...prev };
+            const key = params.path?.replace(/^\//, "") || "";
+            newData[key] = !newData[key];
+            return newData;
+          });
+        }
+      },
+    }),
+    [],
+  );
+
+  const handleDataChange = useCallback((path: string, value: unknown) => {
+    const key = path.replace(/^\//, "");
+    if (key) {
+      setData((prev) => ({ ...prev, [key]: value }));
+    }
+  }, []);
+
+  return (
+    <DataProvider initialData={data} onDataChange={handleDataChange}>
+      <VisibilityProvider>
+        <ActionProvider handlers={handlers}>
+          {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
+          <Renderer tree={tree as any} registry={toolRegistry} loading={false} />
+        </ActionProvider>
+      </VisibilityProvider>
+    </DataProvider>
+  );
 }
 
 export function StoredComponentRenderer({ component }: StoredComponentRendererProps) {
@@ -72,14 +157,7 @@ export function StoredComponentRenderer({ component }: StoredComponentRendererPr
         </div>
       ) : (
         <div style={styles.content}>
-          <DataProvider initialData={{}}>
-            <VisibilityProvider>
-              <ActionProvider handlers={{}}>
-                {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
-                <Renderer tree={tree as any} registry={toolRegistry} loading={false} />
-              </ActionProvider>
-            </VisibilityProvider>
-          </DataProvider>
+          <InteractiveRenderer tree={tree} />
         </div>
       )}
     </div>
