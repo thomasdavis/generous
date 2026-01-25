@@ -1,6 +1,7 @@
 /**
  * Popover - Floating content panel
  *
+ * Uses Base UI for positioning and outside click handling.
  * NO hard offset shadows - uses soft diffuse shadows.
  */
 
@@ -8,8 +9,19 @@
   /* Allow trigger to be styled by consumer */
 }
 
-.content {
+/* ============================================
+ * POSITIONER
+ * ============================================ */
+
+.positioner {
   z-index: var(--z-popover);
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
   min-width: 200px;
   max-width: 400px;
   padding: var(--space-4);
@@ -19,71 +31,96 @@
   box-shadow: var(--shadow-elevation-3);
 
   /* Animation */
-  animation: popover-in var(--duration-200) var(--ease-out);
+  opacity: 0;
+  transform: scale(0.98);
+  transition:
+    opacity var(--duration-200) var(--ease-out),
+    transform var(--duration-200) var(--ease-out);
 }
 
-/* Animations based on side */
+.content[data-open] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.content[data-starting-style] {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+.content[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.98);
+}
+
+/* Side-based transform origins */
 .content[data-side="top"] {
-  animation-name: popover-in-top;
+  transform-origin: bottom center;
 }
 
 .content[data-side="bottom"] {
-  animation-name: popover-in-bottom;
+  transform-origin: top center;
 }
 
 .content[data-side="left"] {
-  animation-name: popover-in-left;
+  transform-origin: right center;
 }
 
 .content[data-side="right"] {
-  animation-name: popover-in-right;
+  transform-origin: left center;
 }
 
-@keyframes popover-in-top {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ============================================
+ * ARROW
+ * ============================================ */
+
+.arrow {
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  background-color: var(--surface-base);
+  border: 1px solid var(--border-default);
+  border-right: none;
+  border-bottom: none;
 }
 
-@keyframes popover-in-bottom {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ============================================
+ * TITLE
+ * ============================================ */
+
+.title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1) 0;
 }
 
-@keyframes popover-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+/* ============================================
+ * DESCRIPTION
+ * ============================================ */
+
+.description {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
 }
 
-@keyframes popover-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
+/* ============================================
+ * CLOSE BUTTON
+ * ============================================ */
 
-/* Close button */
 .close {
   /* Allow close button to be styled by consumer */
+}
+
+/* ============================================
+ * REDUCED MOTION
+ * ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: none;
+  }
 }

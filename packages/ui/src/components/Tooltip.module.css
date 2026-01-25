@@ -1,6 +1,7 @@
 /**
  * Tooltip - Small informational popup
  *
+ * Uses Base UI for hover delay and positioning.
  * Compact styling with subtle shadow.
  */
 
@@ -8,8 +9,19 @@
   display: inline-flex;
 }
 
-.content {
+/* ============================================
+ * POSITIONER
+ * ============================================ */
+
+.positioner {
   z-index: var(--z-tooltip);
+}
+
+/* ============================================
+ * CONTENT
+ * ============================================ */
+
+.content {
   max-width: 280px;
   padding: var(--space-2) var(--space-3);
   background-color: var(--surface-inverted);
@@ -21,66 +33,62 @@
   pointer-events: none;
 
   /* Animation */
-  animation: tooltip-in var(--duration-150) var(--ease-out);
+  opacity: 0;
+  transform: scale(0.96);
+  transition:
+    opacity var(--duration-150) var(--ease-out),
+    transform var(--duration-150) var(--ease-out);
 }
 
-/* Animations based on side */
+.content[data-open] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.content[data-starting-style] {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+.content[data-ending-style] {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+/* Side-based transform origins */
 .content[data-side="top"] {
-  animation-name: tooltip-in-top;
+  transform-origin: bottom center;
 }
 
 .content[data-side="bottom"] {
-  animation-name: tooltip-in-bottom;
+  transform-origin: top center;
 }
 
 .content[data-side="left"] {
-  animation-name: tooltip-in-left;
+  transform-origin: right center;
 }
 
 .content[data-side="right"] {
-  animation-name: tooltip-in-right;
+  transform-origin: left center;
 }
 
-@keyframes tooltip-in-top {
-  from {
-    opacity: 0;
-    transform: translateY(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ============================================
+ * ARROW
+ * ============================================ */
+
+.arrow {
+  width: 8px;
+  height: 8px;
+  transform: rotate(45deg);
+  background-color: var(--surface-inverted);
 }
 
-@keyframes tooltip-in-bottom {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* ============================================
+ * REDUCED MOTION
+ * ============================================ */
 
-@keyframes tooltip-in-left {
-  from {
-    opacity: 0;
-    transform: translateX(2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes tooltip-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    transition: none;
   }
 }

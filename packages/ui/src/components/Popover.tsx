@@ -1,42 +1,9 @@
 "use client";
 
-import {
-  type ComponentPropsWithoutRef,
-  createContext,
-  forwardRef,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
-import { cn, dataAttrs } from "../utils/cn";
+import { Popover as BasePopover } from "@base-ui-components/react/popover";
+import React, { type ComponentPropsWithoutRef, forwardRef, type ReactNode } from "react";
+import { cn } from "../utils/cn";
 import styles from "./Popover.module.css";
-import { Portal } from "./Portal";
-
-/* ============================================
- * CONTEXT
- * ============================================ */
-
-interface PopoverContextValue {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  triggerId: string;
-  contentId: string;
-  triggerRef: React.RefObject<HTMLButtonElement | null>;
-}
-
-const PopoverContext = createContext<PopoverContextValue | null>(null);
-
-function usePopover() {
-  const context = useContext(PopoverContext);
-  if (!context) {
-    throw new Error("Popover components must be used within Popover.Root");
-  }
-  return context;
-}
 
 /* ============================================
  * ROOT
@@ -58,35 +25,15 @@ export interface PopoverRootProps {
   children?: ReactNode;
 }
 
-function PopoverRoot({
-  open: controlledOpen,
-  defaultOpen = false,
-  onOpenChange,
-  children,
-}: PopoverRootProps) {
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
-
-  const id = useId();
-  const triggerId = `popover-trigger-${id}`;
-  const contentId = `popover-content-${id}`;
-
-  const setOpen = useCallback(
-    (newOpen: boolean) => {
-      if (!isControlled) {
-        setInternalOpen(newOpen);
-      }
-      onOpenChange?.(newOpen);
-    },
-    [isControlled, onOpenChange],
-  );
-
+function PopoverRoot({ open, defaultOpen, onOpenChange, children }: PopoverRootProps) {
   return (
-    <PopoverContext.Provider value={{ open, setOpen, triggerId, contentId, triggerRef }}>
+    <BasePopover.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={(open) => onOpenChange?.(open)}
+    >
       {children}
-    </PopoverContext.Provider>
+    </BasePopover.Root>
   );
 }
 
@@ -98,47 +45,108 @@ PopoverRoot.displayName = "Popover.Root";
 
 export interface PopoverTriggerProps extends ComponentPropsWithoutRef<"button"> {
   /**
-   * Render as child element
+   * Change the default rendered element for the one passed as a child
    */
   asChild?: boolean;
   children?: ReactNode;
 }
 
 const PopoverTrigger = forwardRef<HTMLButtonElement, PopoverTriggerProps>(
-  ({ asChild, children, className, onClick, ...props }, ref) => {
-    const { open, setOpen, triggerId, contentId, triggerRef } = usePopover();
-
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      setOpen(!open);
-      onClick?.(e);
-    };
-
-    // Merge refs
-    const mergedRef = (node: HTMLButtonElement) => {
-      triggerRef.current = node;
-      if (typeof ref === "function") ref(node);
-      else if (ref) ref.current = node;
-    };
+  ({ children, className, asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(children)) {
+      return (
+        <BasePopover.Trigger
+          ref={ref}
+          render={children as React.ReactElement<Record<string, unknown>>}
+          className={cn(styles.trigger, className)}
+          {...props}
+        />
+      );
+    }
 
     return (
-      <button
-        ref={mergedRef}
-        type="button"
-        id={triggerId}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={open ? contentId : undefined}
-        className={cn(styles.trigger, className)}
-        onClick={handleClick}
-        {...props}
-      >
+      <BasePopover.Trigger ref={ref} className={cn(styles.trigger, className)} {...props}>
         {children}
-      </button>
+      </BasePopover.Trigger>
     );
   },
 );
 
 PopoverTrigger.displayName = "Popover.Trigger";
+
+/* ============================================
+ * PORTAL
+ * ============================================ */
+
+export interface PopoverPortalProps {
+  children?: ReactNode;
+  container?: HTMLElement | null;
+}
+
+function PopoverPortal({ children, container }: PopoverPortalProps) {
+  return <BasePopover.Portal container={container}>{children}</BasePopover.Portal>;
+}
+
+PopoverPortal.displayName = "Popover.Portal";
+
+/* ============================================
+ * POSITIONER
+ * ============================================ */
+
+export interface PopoverPositionerProps extends ComponentPropsWithoutRef<"div"> {
+  /**
+   * Preferred side
+   * @default "bottom"
+   */
+  side?: "top" | "right" | "bottom" | "left";
+  /**
+   * Preferred alignment
+   * @default "center"
+   */
+  align?: "start" | "center" | "end";
+  /**
+   * Distance from trigger
+   * @default 8
+   */
+  sideOffset?: number;
+  /**
+   * Alignment offset
+   * @default 0
+   */
+  alignOffset?: number;
+  children?: ReactNode;
+}
+
+const PopoverPositioner = forwardRef<HTMLDivElement, PopoverPositionerProps>(
+  (
+    {
+      side = "bottom",
+      align = "center",
+      sideOffset = 8,
+      alignOffset = 0,
+      children,
+      className,
+      ...props
+    },
+    ref,
+  ) => {
+    return (
+      <BasePopover.Positioner
+        ref={ref}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        alignOffset={alignOffset}
+        className={cn(styles.positioner, className)}
+        {...props}
+      >
+        {children}
+      </BasePopover.Positioner>
+    );
+  },
+);
+
+PopoverPositioner.displayName = "Popover.Positioner";
 
 /* ============================================
  * CONTENT
@@ -148,166 +156,30 @@ export interface PopoverContentProps extends ComponentPropsWithoutRef<"div"> {
   /**
    * Preferred alignment
    * @default "center"
+   * @deprecated Use PopoverPositioner align prop instead
    */
   align?: "start" | "center" | "end";
   /**
    * Preferred side
    * @default "bottom"
+   * @deprecated Use PopoverPositioner side prop instead
    */
   side?: "top" | "right" | "bottom" | "left";
   /**
    * Distance from trigger
    * @default 8
+   * @deprecated Use PopoverPositioner sideOffset prop instead
    */
   sideOffset?: number;
   children?: ReactNode;
 }
 
 const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
-  (
-    { align = "center", side = "bottom", sideOffset = 8, children, className, style, ...props },
-    ref,
-  ) => {
-    const { open, setOpen, contentId, triggerRef } = usePopover();
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState({ top: 0, left: 0 });
-
-    // Calculate position
-    useEffect(() => {
-      if (!open || !triggerRef.current) return;
-
-      const updatePosition = () => {
-        const trigger = triggerRef.current;
-        if (!trigger) return;
-
-        const rect = trigger.getBoundingClientRect();
-        const contentEl = contentRef.current;
-        const contentWidth = contentEl?.offsetWidth || 0;
-        const contentHeight = contentEl?.offsetHeight || 0;
-
-        let top = 0;
-        let left = 0;
-
-        // Calculate based on side
-        switch (side) {
-          case "top":
-            top = rect.top - contentHeight - sideOffset;
-            break;
-          case "bottom":
-            top = rect.bottom + sideOffset;
-            break;
-          case "left":
-            left = rect.left - contentWidth - sideOffset;
-            top = rect.top;
-            break;
-          case "right":
-            left = rect.right + sideOffset;
-            top = rect.top;
-            break;
-        }
-
-        // Calculate based on alignment
-        if (side === "top" || side === "bottom") {
-          switch (align) {
-            case "start":
-              left = rect.left;
-              break;
-            case "center":
-              left = rect.left + rect.width / 2 - contentWidth / 2;
-              break;
-            case "end":
-              left = rect.right - contentWidth;
-              break;
-          }
-        } else {
-          switch (align) {
-            case "start":
-              top = rect.top;
-              break;
-            case "center":
-              top = rect.top + rect.height / 2 - contentHeight / 2;
-              break;
-            case "end":
-              top = rect.bottom - contentHeight;
-              break;
-          }
-        }
-
-        // Keep in viewport
-        const padding = 8;
-        left = Math.max(padding, Math.min(left, window.innerWidth - contentWidth - padding));
-        top = Math.max(padding, Math.min(top, window.innerHeight - contentHeight - padding));
-
-        setPosition({ top, left });
-      };
-
-      updatePosition();
-      window.addEventListener("resize", updatePosition);
-      window.addEventListener("scroll", updatePosition, true);
-
-      return () => {
-        window.removeEventListener("resize", updatePosition);
-        window.removeEventListener("scroll", updatePosition, true);
-      };
-    }, [open, side, align, sideOffset, triggerRef]);
-
-    // Close on outside click
-    useEffect(() => {
-      if (!open) return;
-
-      const handleClickOutside = (e: MouseEvent) => {
-        const target = e.target as Node;
-        if (
-          contentRef.current &&
-          !contentRef.current.contains(target) &&
-          triggerRef.current &&
-          !triggerRef.current.contains(target)
-        ) {
-          setOpen(false);
-        }
-      };
-
-      const handleEscape = (e: KeyboardEvent) => {
-        if (e.key === "Escape") {
-          setOpen(false);
-          triggerRef.current?.focus();
-        }
-      };
-
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscape);
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-        document.removeEventListener("keydown", handleEscape);
-      };
-    }, [open, setOpen, triggerRef]);
-
-    if (!open) return null;
-
+  ({ children, className, ...props }, ref) => {
     return (
-      <Portal>
-        <div
-          ref={(node) => {
-            contentRef.current = node;
-            if (typeof ref === "function") ref(node);
-            else if (ref) ref.current = node;
-          }}
-          id={contentId}
-          role="dialog"
-          className={cn(styles.content, className)}
-          {...dataAttrs({ side, align })}
-          style={{
-            ...style,
-            position: "fixed",
-            top: position.top,
-            left: position.left,
-          }}
-          {...props}
-        >
-          {children}
-        </div>
-      </Portal>
+      <BasePopover.Popup ref={ref} className={cn(styles.content, className)} {...props}>
+        {children}
+      </BasePopover.Popup>
     );
   },
 );
@@ -315,37 +187,99 @@ const PopoverContent = forwardRef<HTMLDivElement, PopoverContentProps>(
 PopoverContent.displayName = "Popover.Content";
 
 /* ============================================
+ * ARROW
+ * ============================================ */
+
+export interface PopoverArrowProps extends ComponentPropsWithoutRef<"div"> {
+  children?: ReactNode;
+}
+
+const PopoverArrow = forwardRef<HTMLDivElement, PopoverArrowProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <BasePopover.Arrow ref={ref} className={cn(styles.arrow, className)} {...props}>
+        {children}
+      </BasePopover.Arrow>
+    );
+  },
+);
+
+PopoverArrow.displayName = "Popover.Arrow";
+
+/* ============================================
  * CLOSE
  * ============================================ */
 
 export interface PopoverCloseProps extends ComponentPropsWithoutRef<"button"> {
+  /**
+   * Change the default rendered element for the one passed as a child
+   */
+  asChild?: boolean;
   children?: ReactNode;
 }
 
 const PopoverClose = forwardRef<HTMLButtonElement, PopoverCloseProps>(
-  ({ children, className, onClick, ...props }, ref) => {
-    const { setOpen } = usePopover();
-
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      setOpen(false);
-      onClick?.(e);
-    };
+  ({ children, className, asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(children)) {
+      return (
+        <BasePopover.Close
+          ref={ref}
+          render={children as React.ReactElement<Record<string, unknown>>}
+          className={cn(styles.close, className)}
+          {...props}
+        />
+      );
+    }
 
     return (
-      <button
-        ref={ref}
-        type="button"
-        className={cn(styles.close, className)}
-        onClick={handleClick}
-        {...props}
-      >
+      <BasePopover.Close ref={ref} className={cn(styles.close, className)} {...props}>
         {children}
-      </button>
+      </BasePopover.Close>
     );
   },
 );
 
 PopoverClose.displayName = "Popover.Close";
+
+/* ============================================
+ * TITLE
+ * ============================================ */
+
+export interface PopoverTitleProps extends ComponentPropsWithoutRef<"h3"> {
+  children?: ReactNode;
+}
+
+const PopoverTitle = forwardRef<HTMLHeadingElement, PopoverTitleProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <BasePopover.Title ref={ref} className={cn(styles.title, className)} {...props}>
+        {children}
+      </BasePopover.Title>
+    );
+  },
+);
+
+PopoverTitle.displayName = "Popover.Title";
+
+/* ============================================
+ * DESCRIPTION
+ * ============================================ */
+
+export interface PopoverDescriptionProps extends ComponentPropsWithoutRef<"p"> {
+  children?: ReactNode;
+}
+
+const PopoverDescription = forwardRef<HTMLParagraphElement, PopoverDescriptionProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <BasePopover.Description ref={ref} className={cn(styles.description, className)} {...props}>
+        {children}
+      </BasePopover.Description>
+    );
+  },
+);
+
+PopoverDescription.displayName = "Popover.Description";
 
 /* ============================================
  * EXPORTS
@@ -354,6 +288,11 @@ PopoverClose.displayName = "Popover.Close";
 export const Popover = {
   Root: PopoverRoot,
   Trigger: PopoverTrigger,
+  Portal: PopoverPortal,
+  Positioner: PopoverPositioner,
   Content: PopoverContent,
+  Arrow: PopoverArrow,
   Close: PopoverClose,
+  Title: PopoverTitle,
+  Description: PopoverDescription,
 };

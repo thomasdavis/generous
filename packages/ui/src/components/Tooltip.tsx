@@ -1,42 +1,37 @@
 "use client";
 
-import {
-  type ComponentPropsWithoutRef,
-  createContext,
-  forwardRef,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
-import { cn, dataAttrs } from "../utils/cn";
-import { Portal } from "./Portal";
+import { Tooltip as BaseTooltip } from "@base-ui-components/react/tooltip";
+import React, { type ComponentPropsWithoutRef, forwardRef, type ReactNode } from "react";
+import { cn } from "../utils/cn";
 import styles from "./Tooltip.module.css";
 
 /* ============================================
- * CONTEXT
+ * PROVIDER
  * ============================================ */
 
-interface TooltipContextValue {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  contentId: string;
-  triggerRef: React.RefObject<HTMLElement | null>;
-  delayDuration: number;
+export interface TooltipProviderProps {
+  /**
+   * Delay before showing tooltip (ms)
+   * @default 400
+   */
+  delay?: number;
+  /**
+   * Delay before closing tooltip (ms)
+   * @default 0
+   */
+  closeDelay?: number;
+  children?: ReactNode;
 }
 
-const TooltipContext = createContext<TooltipContextValue | null>(null);
-
-function useTooltip() {
-  const context = useContext(TooltipContext);
-  if (!context) {
-    throw new Error("Tooltip components must be used within Tooltip.Root");
-  }
-  return context;
+function TooltipProvider({ delay = 400, closeDelay = 0, children }: TooltipProviderProps) {
+  return (
+    <BaseTooltip.Provider delay={delay} closeDelay={closeDelay}>
+      {children}
+    </BaseTooltip.Provider>
+  );
 }
+
+TooltipProvider.displayName = "Tooltip.Provider";
 
 /* ============================================
  * ROOT
@@ -56,43 +51,56 @@ export interface TooltipRootProps {
    */
   onOpenChange?: (open: boolean) => void;
   /**
-   * Delay before showing tooltip (ms)
+   * Delay before showing tooltip (ms).
+   * Creates an internal Provider if specified.
    * @default 400
+   */
+  delay?: number;
+  /**
+   * Delay before closing tooltip (ms).
+   * Creates an internal Provider if specified.
+   * @default 0
+   */
+  closeDelay?: number;
+  /**
+   * @deprecated Use delay instead
    */
   delayDuration?: number;
   children?: ReactNode;
 }
 
 function TooltipRoot({
-  open: controlledOpen,
-  defaultOpen = false,
+  open,
+  defaultOpen,
   onOpenChange,
-  delayDuration = 400,
+  delay,
+  closeDelay,
+  delayDuration,
   children,
 }: TooltipRootProps) {
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-  const triggerRef = useRef<HTMLElement | null>(null);
+  // Support legacy delayDuration prop
+  const effectiveDelay = delay ?? delayDuration;
 
-  const id = useId();
-  const contentId = `tooltip-${id}`;
-
-  const setOpen = useCallback(
-    (newOpen: boolean) => {
-      if (!isControlled) {
-        setInternalOpen(newOpen);
-      }
-      onOpenChange?.(newOpen);
-    },
-    [isControlled, onOpenChange],
-  );
-
-  return (
-    <TooltipContext.Provider value={{ open, setOpen, contentId, triggerRef, delayDuration }}>
+  const root = (
+    <BaseTooltip.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={(open) => onOpenChange?.(open)}
+    >
       {children}
-    </TooltipContext.Provider>
+    </BaseTooltip.Root>
   );
+
+  // If delay is specified, wrap in a provider
+  if (effectiveDelay !== undefined || closeDelay !== undefined) {
+    return (
+      <BaseTooltip.Provider delay={effectiveDelay} closeDelay={closeDelay}>
+        {root}
+      </BaseTooltip.Provider>
+    );
+  }
+
+  return root;
 }
 
 TooltipRoot.displayName = "Tooltip.Root";
@@ -101,68 +109,93 @@ TooltipRoot.displayName = "Tooltip.Root";
  * TRIGGER
  * ============================================ */
 
-export interface TooltipTriggerProps extends ComponentPropsWithoutRef<"span"> {
+export interface TooltipTriggerProps extends ComponentPropsWithoutRef<"button"> {
+  /**
+   * Change the default rendered element for the one passed as a child
+   */
+  asChild?: boolean;
   children?: ReactNode;
 }
 
-const TooltipTrigger = forwardRef<HTMLSpanElement, TooltipTriggerProps>(
-  ({ children, className, ...props }, ref) => {
-    const { setOpen, contentId, triggerRef, delayDuration, open } = useTooltip();
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const handleMouseEnter = () => {
-      timeoutRef.current = setTimeout(() => {
-        setOpen(true);
-      }, delayDuration);
-    };
-
-    const handleMouseLeave = () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-      setOpen(false);
-    };
-
-    const handleFocus = () => {
-      setOpen(true);
-    };
-
-    const handleBlur = () => {
-      setOpen(false);
-    };
-
-    // Cleanup timeout on unmount
-    useEffect(() => {
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current);
-        }
-      };
-    }, []);
+const TooltipTrigger = forwardRef<HTMLButtonElement, TooltipTriggerProps>(
+  ({ children, className, asChild, ...props }, ref) => {
+    if (asChild && React.isValidElement(children)) {
+      return (
+        <BaseTooltip.Trigger
+          ref={ref}
+          render={children as React.ReactElement<Record<string, unknown>>}
+          className={cn(styles.trigger, className)}
+          {...props}
+        />
+      );
+    }
 
     return (
-      <span
-        ref={(node) => {
-          triggerRef.current = node;
-          if (typeof ref === "function") ref(node);
-          else if (ref) ref.current = node;
-        }}
-        aria-describedby={open ? contentId : undefined}
-        className={cn(styles.trigger, className)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        {...props}
-      >
+      <BaseTooltip.Trigger ref={ref} className={cn(styles.trigger, className)} {...props}>
         {children}
-      </span>
+      </BaseTooltip.Trigger>
     );
   },
 );
 
 TooltipTrigger.displayName = "Tooltip.Trigger";
+
+/* ============================================
+ * PORTAL
+ * ============================================ */
+
+export interface TooltipPortalProps {
+  children?: ReactNode;
+  container?: HTMLElement | null;
+}
+
+function TooltipPortal({ children, container }: TooltipPortalProps) {
+  return <BaseTooltip.Portal container={container}>{children}</BaseTooltip.Portal>;
+}
+
+TooltipPortal.displayName = "Tooltip.Portal";
+
+/* ============================================
+ * POSITIONER
+ * ============================================ */
+
+export interface TooltipPositionerProps extends ComponentPropsWithoutRef<"div"> {
+  /**
+   * Preferred side
+   * @default "top"
+   */
+  side?: "top" | "right" | "bottom" | "left";
+  /**
+   * Preferred alignment
+   * @default "center"
+   */
+  align?: "start" | "center" | "end";
+  /**
+   * Distance from trigger
+   * @default 6
+   */
+  sideOffset?: number;
+  children?: ReactNode;
+}
+
+const TooltipPositioner = forwardRef<HTMLDivElement, TooltipPositionerProps>(
+  ({ side = "top", align = "center", sideOffset = 6, children, className, ...props }, ref) => {
+    return (
+      <BaseTooltip.Positioner
+        ref={ref}
+        side={side}
+        align={align}
+        sideOffset={sideOffset}
+        className={cn(styles.positioner, className)}
+        {...props}
+      >
+        {children}
+      </BaseTooltip.Positioner>
+    );
+  },
+);
+
+TooltipPositioner.displayName = "Tooltip.Positioner";
 
 /* ============================================
  * CONTENT
@@ -172,93 +205,24 @@ export interface TooltipContentProps extends ComponentPropsWithoutRef<"div"> {
   /**
    * Preferred side
    * @default "top"
+   * @deprecated Use TooltipPositioner side prop instead
    */
   side?: "top" | "right" | "bottom" | "left";
   /**
    * Distance from trigger
    * @default 6
+   * @deprecated Use TooltipPositioner sideOffset prop instead
    */
   sideOffset?: number;
   children?: ReactNode;
 }
 
 const TooltipContent = forwardRef<HTMLDivElement, TooltipContentProps>(
-  ({ side = "top", sideOffset = 6, children, className, style, ...props }, ref) => {
-    const { open, contentId, triggerRef } = useTooltip();
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState({ top: 0, left: 0 });
-
-    // Calculate position
-    useEffect(() => {
-      if (!open || !triggerRef.current) return;
-
-      const updatePosition = () => {
-        const trigger = triggerRef.current;
-        if (!trigger) return;
-
-        const rect = trigger.getBoundingClientRect();
-        const contentEl = contentRef.current;
-        const contentWidth = contentEl?.offsetWidth || 0;
-        const contentHeight = contentEl?.offsetHeight || 0;
-
-        let top = 0;
-        let left = 0;
-
-        switch (side) {
-          case "top":
-            top = rect.top - contentHeight - sideOffset;
-            left = rect.left + rect.width / 2 - contentWidth / 2;
-            break;
-          case "bottom":
-            top = rect.bottom + sideOffset;
-            left = rect.left + rect.width / 2 - contentWidth / 2;
-            break;
-          case "left":
-            top = rect.top + rect.height / 2 - contentHeight / 2;
-            left = rect.left - contentWidth - sideOffset;
-            break;
-          case "right":
-            top = rect.top + rect.height / 2 - contentHeight / 2;
-            left = rect.right + sideOffset;
-            break;
-        }
-
-        // Keep in viewport
-        const padding = 8;
-        left = Math.max(padding, Math.min(left, window.innerWidth - contentWidth - padding));
-        top = Math.max(padding, Math.min(top, window.innerHeight - contentHeight - padding));
-
-        setPosition({ top, left });
-      };
-
-      updatePosition();
-    }, [open, side, sideOffset, triggerRef]);
-
-    if (!open) return null;
-
+  ({ children, className, ...props }, ref) => {
     return (
-      <Portal>
-        <div
-          ref={(node) => {
-            contentRef.current = node;
-            if (typeof ref === "function") ref(node);
-            else if (ref) ref.current = node;
-          }}
-          id={contentId}
-          role="tooltip"
-          className={cn(styles.content, className)}
-          {...dataAttrs({ side })}
-          style={{
-            ...style,
-            position: "fixed",
-            top: position.top,
-            left: position.left,
-          }}
-          {...props}
-        >
-          {children}
-        </div>
-      </Portal>
+      <BaseTooltip.Popup ref={ref} className={cn(styles.content, className)} {...props}>
+        {children}
+      </BaseTooltip.Popup>
     );
   },
 );
@@ -266,11 +230,35 @@ const TooltipContent = forwardRef<HTMLDivElement, TooltipContentProps>(
 TooltipContent.displayName = "Tooltip.Content";
 
 /* ============================================
+ * ARROW
+ * ============================================ */
+
+export interface TooltipArrowProps extends ComponentPropsWithoutRef<"div"> {
+  children?: ReactNode;
+}
+
+const TooltipArrow = forwardRef<HTMLDivElement, TooltipArrowProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <BaseTooltip.Arrow ref={ref} className={cn(styles.arrow, className)} {...props}>
+        {children}
+      </BaseTooltip.Arrow>
+    );
+  },
+);
+
+TooltipArrow.displayName = "Tooltip.Arrow";
+
+/* ============================================
  * EXPORTS
  * ============================================ */
 
 export const Tooltip = {
+  Provider: TooltipProvider,
   Root: TooltipRoot,
   Trigger: TooltipTrigger,
+  Portal: TooltipPortal,
+  Positioner: TooltipPositioner,
   Content: TooltipContent,
+  Arrow: TooltipArrow,
 };

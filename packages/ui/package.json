@@ -23,6 +23,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@base-ui-components/react": "^1.0.0-alpha.10",
     "lucide-react": "^0.468.0"
   },
   "devDependencies": {

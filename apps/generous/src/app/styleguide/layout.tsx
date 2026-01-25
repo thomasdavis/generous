@@ -29,6 +29,8 @@ const navigation = [
       { label: "Switch", href: "/styleguide/components/switch" },
       { label: "Select", href: "/styleguide/components/select" },
       { label: "Dialog", href: "/styleguide/components/dialog" },
+      { label: "Popover", href: "/styleguide/components/popover" },
+      { label: "Tooltip", href: "/styleguide/components/tooltip" },
       { label: "Toast", href: "/styleguide/components/toast" },
       { label: "Tabs", href: "/styleguide/components/tabs" },
       { label: "Accordion", href: "/styleguide/components/accordion" },

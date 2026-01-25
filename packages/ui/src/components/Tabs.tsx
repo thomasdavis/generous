@@ -1,47 +1,31 @@
 "use client";
 
-import {
-  type ComponentPropsWithoutRef,
-  createContext,
-  forwardRef,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useId,
-  useState,
-} from "react";
+import { Tabs as BaseTabs } from "@base-ui-components/react/tabs";
+import { type ComponentPropsWithoutRef, forwardRef, type ReactNode } from "react";
 import { cn, dataAttrs } from "../utils/cn";
 import styles from "./Tabs.module.css";
-
-/* ============================================
- * CONTEXT
- * ============================================ */
-
-interface TabsContextValue {
-  value: string;
-  setValue: (value: string) => void;
-  baseId: string;
-  orientation: "horizontal" | "vertical";
-}
-
-const TabsContext = createContext<TabsContextValue | null>(null);
-
-function useTabs() {
-  const context = useContext(TabsContext);
-  if (!context) {
-    throw new Error("Tabs components must be used within Tabs.Root");
-  }
-  return context;
-}
 
 /* ============================================
  * ROOT
  * ============================================ */
 
-export interface TabsRootProps extends ComponentPropsWithoutRef<"div"> {
-  value?: string;
-  defaultValue?: string;
-  onValueChange?: (value: string) => void;
+export interface TabsRootProps extends Omit<ComponentPropsWithoutRef<"div">, "defaultValue"> {
+  /**
+   * Controlled value
+   */
+  value?: string | number;
+  /**
+   * Default value (uncontrolled)
+   */
+  defaultValue?: string | number;
+  /**
+   * Callback when value changes
+   */
+  onValueChange?: (value: string | number) => void;
+  /**
+   * Orientation of the tabs
+   * @default "horizontal"
+   */
   orientation?: "horizontal" | "vertical";
   children?: ReactNode;
 }
@@ -49,8 +33,8 @@ export interface TabsRootProps extends ComponentPropsWithoutRef<"div"> {
 const TabsRoot = forwardRef<HTMLDivElement, TabsRootProps>(
   (
     {
-      value: controlledValue,
-      defaultValue = "",
+      value,
+      defaultValue,
       onValueChange,
       orientation = "horizontal",
       children,
@@ -59,32 +43,19 @@ const TabsRoot = forwardRef<HTMLDivElement, TabsRootProps>(
     },
     ref,
   ) => {
-    const [internalValue, setInternalValue] = useState(defaultValue);
-    const isControlled = controlledValue !== undefined;
-    const value = isControlled ? controlledValue : internalValue;
-    const baseId = useId();
-
-    const setValue = useCallback(
-      (newValue: string) => {
-        if (!isControlled) {
-          setInternalValue(newValue);
-        }
-        onValueChange?.(newValue);
-      },
-      [isControlled, onValueChange],
-    );
-
     return (
-      <TabsContext.Provider value={{ value, setValue, baseId, orientation }}>
-        <div
-          ref={ref}
-          className={cn(styles.root, className)}
-          {...dataAttrs({ orientation })}
-          {...props}
-        >
-          {children}
-        </div>
-      </TabsContext.Provider>
+      <BaseTabs.Root
+        ref={ref}
+        value={value}
+        defaultValue={defaultValue}
+        onValueChange={(val) => onValueChange?.(val as string | number)}
+        orientation={orientation}
+        className={cn(styles.root, className)}
+        {...dataAttrs({ orientation })}
+        {...props}
+      >
+        {children}
+      </BaseTabs.Root>
     );
   },
 );
@@ -96,24 +67,31 @@ TabsRoot.displayName = "Tabs.Root";
  * ============================================ */
 
 export interface TabsListProps extends ComponentPropsWithoutRef<"div"> {
+  /**
+   * Whether to loop keyboard navigation
+   * @default true
+   */
+  loop?: boolean;
+  /**
+   * Whether to activate tab on focus
+   * @default false
+   */
+  activateOnFocus?: boolean;
   children?: ReactNode;
 }
 
 const TabsList = forwardRef<HTMLDivElement, TabsListProps>(
-  ({ children, className, ...props }, ref) => {
-    const { orientation } = useTabs();
-
+  ({ loop = true, activateOnFocus = false, children, className, ...props }, ref) => {
     return (
-      <div
+      <BaseTabs.List
         ref={ref}
-        role="tablist"
-        aria-orientation={orientation}
+        loopFocus={loop}
+        activateOnFocus={activateOnFocus}
         className={cn(styles.list, className)}
-        {...dataAttrs({ orientation })}
         {...props}
       >
         {children}
-      </div>
+      </BaseTabs.List>
     );
   },
 );
@@ -124,42 +102,30 @@ TabsList.displayName = "Tabs.List";
  * TRIGGER
  * ============================================ */
 
-export interface TabsTriggerProps extends ComponentPropsWithoutRef<"button"> {
-  value: string;
+export interface TabsTriggerProps extends Omit<ComponentPropsWithoutRef<"button">, "value"> {
+  /**
+   * Value of this tab
+   */
+  value: string | number;
+  /**
+   * Whether this tab is disabled
+   */
   disabled?: boolean;
   children?: ReactNode;
 }
 
 const TabsTrigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(
-  ({ value: tabValue, disabled = false, children, className, onClick, ...props }, ref) => {
-    const { value, setValue, baseId } = useTabs();
-    const isSelected = value === tabValue;
-
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (!disabled) {
-        setValue(tabValue);
-      }
-      onClick?.(e);
-    };
-
+  ({ value, disabled = false, children, className, ...props }, ref) => {
     return (
-      <button
+      <BaseTabs.Tab
         ref={ref}
-        type="button"
-        role="tab"
-        id={`${baseId}-tab-${tabValue}`}
-        aria-selected={isSelected}
-        aria-controls={`${baseId}-panel-${tabValue}`}
-        tabIndex={isSelected ? 0 : -1}
+        value={value}
         disabled={disabled}
-        data-state={isSelected ? "active" : "inactive"}
         className={cn(styles.trigger, className)}
-        onClick={handleClick}
-        {...dataAttrs({ disabled })}
         {...props}
       >
         {children}
-      </button>
+      </BaseTabs.Tab>
     );
   },
 );
@@ -167,42 +133,63 @@ const TabsTrigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(
 TabsTrigger.displayName = "Tabs.Trigger";
 
 /* ============================================
- * CONTENT
+ * CONTENT (PANEL)
  * ============================================ */
 
-export interface TabsContentProps extends ComponentPropsWithoutRef<"div"> {
-  value: string;
+export interface TabsContentProps extends Omit<ComponentPropsWithoutRef<"div">, "value"> {
+  /**
+   * Value of the tab this content belongs to
+   */
+  value: string | number;
+  /**
+   * Keep content mounted when inactive
+   * @default false
+   */
+  keepMounted?: boolean;
+  /**
+   * @deprecated Use keepMounted instead
+   */
   forceMount?: boolean;
   children?: ReactNode;
 }
 
 const TabsContent = forwardRef<HTMLDivElement, TabsContentProps>(
-  ({ value: tabValue, forceMount = false, children, className, ...props }, ref) => {
-    const { value, baseId } = useTabs();
-    const isSelected = value === tabValue;
-
-    if (!isSelected && !forceMount) {
-      return null;
-    }
-
+  ({ value, keepMounted, forceMount, children, className, ...props }, ref) => {
     return (
-      <div
+      <BaseTabs.Panel
         ref={ref}
-        role="tabpanel"
-        id={`${baseId}-panel-${tabValue}`}
-        aria-labelledby={`${baseId}-tab-${tabValue}`}
-        data-state={isSelected ? "active" : "inactive"}
+        value={value}
+        keepMounted={keepMounted ?? forceMount}
         className={cn(styles.content, className)}
-        hidden={!isSelected}
         {...props}
       >
         {children}
-      </div>
+      </BaseTabs.Panel>
     );
   },
 );
 
 TabsContent.displayName = "Tabs.Content";
+
+/* ============================================
+ * INDICATOR
+ * ============================================ */
+
+export interface TabsIndicatorProps extends ComponentPropsWithoutRef<"span"> {
+  children?: ReactNode;
+}
+
+const TabsIndicator = forwardRef<HTMLSpanElement, TabsIndicatorProps>(
+  ({ children, className, ...props }, ref) => {
+    return (
+      <BaseTabs.Indicator ref={ref} className={cn(styles.indicator, className)} {...props}>
+        {children}
+      </BaseTabs.Indicator>
+    );
+  },
+);
+
+TabsIndicator.displayName = "Tabs.Indicator";
 
 /* ============================================
  * EXPORTS
@@ -213,4 +200,5 @@ export const Tabs = {
   List: TabsList,
   Trigger: TabsTrigger,
   Content: TabsContent,
+  Indicator: TabsIndicator,
 };

@@ -1,41 +1,9 @@
 "use client";
 
-import {
-  type ComponentPropsWithoutRef,
-  createContext,
-  forwardRef,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useId,
-  useState,
-} from "react";
+import { Dialog as BaseDialog } from "@base-ui-components/react/dialog";
+import React, { type ComponentPropsWithoutRef, forwardRef, type ReactNode } from "react";
 import { cn } from "../utils/cn";
 import styles from "./Dialog.module.css";
-import { FocusTrap } from "./FocusTrap";
-import { Portal } from "./Portal";
-
-/* ============================================
- * CONTEXT
- * ============================================ */
-
-interface DialogContextValue {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  titleId: string;
-  descriptionId: string;
-}
-
-const DialogContext = createContext<DialogContextValue | null>(null);
-
-function useDialog() {
-  const context = useContext(DialogContext);
-  if (!context) {
-    throw new Error("Dialog components must be used within Dialog.Root");
-  }
-  return context;
-}
 
 /* ============================================
  * ROOT
@@ -54,48 +22,24 @@ export interface DialogRootProps {
    * Callback when open state changes
    */
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Whether the dialog is modal (blocks interaction with the rest of the page)
+   * @default true
+   */
+  modal?: boolean;
   children?: ReactNode;
 }
 
-function DialogRoot({
-  open: controlledOpen,
-  defaultOpen = false,
-  onOpenChange,
-  children,
-}: DialogRootProps) {
-  const [internalOpen, setInternalOpen] = useState(defaultOpen);
-  const isControlled = controlledOpen !== undefined;
-  const open = isControlled ? controlledOpen : internalOpen;
-
-  const id = useId();
-  const titleId = `dialog-title-${id}`;
-  const descriptionId = `dialog-description-${id}`;
-
-  const setOpen = useCallback(
-    (newOpen: boolean) => {
-      if (!isControlled) {
-        setInternalOpen(newOpen);
-      }
-      onOpenChange?.(newOpen);
-    },
-    [isControlled, onOpenChange],
-  );
-
-  // Prevent body scroll when open
-  useEffect(() => {
-    if (open) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [open]);
-
+function DialogRoot({ open, defaultOpen, onOpenChange, modal = true, children }: DialogRootProps) {
   return (
-    <DialogContext.Provider value={{ open, setOpen, titleId, descriptionId }}>
+    <BaseDialog.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={(open) => onOpenChange?.(open)}
+      modal={modal}
+    >
       {children}
-    </DialogContext.Provider>
+    </BaseDialog.Root>
   );
 }
 
@@ -106,33 +50,54 @@ DialogRoot.displayName = "Dialog.Root";
  * ============================================ */
 
 export interface DialogTriggerProps extends ComponentPropsWithoutRef<"button"> {
+  /**
+   * Change the default rendered element for the one passed as a child
+   */
+  asChild?: boolean;
   children?: ReactNode;
 }
 
 const DialogTrigger = forwardRef<HTMLButtonElement, DialogTriggerProps>(
-  ({ children, className, onClick, ...props }, ref) => {
-    const { setOpen } = useDialog();
-
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      setOpen(true);
-      onClick?.(e);
-    };
+  ({ children, className, asChild, ...props }, ref) => {
+    // When asChild is true, render the child element with Base UI behavior
+    if (asChild && React.isValidElement(children)) {
+      return (
+        <BaseDialog.Trigger
+          ref={ref}
+          render={children as React.ReactElement<Record<string, unknown>>}
+          className={cn(styles.trigger, className)}
+          {...props}
+        />
+      );
+    }
 
     return (
-      <button
-        ref={ref}
-        type="button"
-        className={cn(styles.trigger, className)}
-        onClick={handleClick}
-        {...props}
-      >
+      <BaseDialog.Trigger ref={ref} className={cn(styles.trigger, className)} {...props}>
         {children}
-      </button>
+      </BaseDialog.Trigger>
     );
   },
 );
 
 DialogTrigger.displayName = "Dialog.Trigger";
+
+/* ============================================
+ * PORTAL
+ * ============================================ */
+
+export interface DialogPortalProps {
+  children?: ReactNode;
+  /**
+   * Container to render the portal into
+   */
+  container?: HTMLElement | null;
+}
+
+function DialogPortal({ children, container }: DialogPortalProps) {
+  return <BaseDialog.Portal container={container}>{children}</BaseDialog.Portal>;
+}
+
+DialogPortal.displayName = "Dialog.Portal";
 
 /* ============================================
  * OVERLAY
@@ -141,29 +106,8 @@ DialogTrigger.displayName = "Dialog.Trigger";
 export interface DialogOverlayProps extends ComponentPropsWithoutRef<"div"> {}
 
 const DialogOverlay = forwardRef<HTMLDivElement, DialogOverlayProps>(
-  ({ className, onClick, ...props }, ref) => {
-    const { open, setOpen } = useDialog();
-
-    if (!open) return null;
-
-    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        setOpen(false);
-      }
-      onClick?.(e);
-    };
-
-    return (
-      <Portal>
-        <div
-          ref={ref}
-          className={cn(styles.overlay, className)}
-          onClick={handleClick}
-          aria-hidden="true"
-          {...props}
-        />
-      </Portal>
-    );
+  ({ className, ...props }, ref) => {
+    return <BaseDialog.Backdrop ref={ref} className={cn(styles.overlay, className)} {...props} />;
   },
 );
 
@@ -177,51 +121,24 @@ export interface DialogContentProps extends ComponentPropsWithoutRef<"div"> {
   /**
    * Whether to close when clicking the overlay
    * @default true
+   * @deprecated Use dismissible prop on Root instead
    */
   closeOnOverlayClick?: boolean;
   /**
    * Whether to close on Escape key
    * @default true
+   * @deprecated Handled automatically by Base UI
    */
   closeOnEscape?: boolean;
   children?: ReactNode;
 }
 
 const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
-  ({ closeOnOverlayClick = true, closeOnEscape = true, children, className, ...props }, ref) => {
-    const { open, setOpen, titleId, descriptionId } = useDialog();
-
-    const handleEscape = useCallback(() => {
-      if (closeOnEscape) {
-        setOpen(false);
-      }
-    }, [closeOnEscape, setOpen]);
-
-    if (!open) return null;
-
+  ({ children, className, ...props }, ref) => {
     return (
-      <Portal>
-        <div className={styles.contentWrapper}>
-          <div
-            className={styles.overlay}
-            onClick={closeOnOverlayClick ? () => setOpen(false) : undefined}
-            aria-hidden="true"
-          />
-          <FocusTrap active={open} onEscape={handleEscape}>
-            <div
-              ref={ref}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={titleId}
-              aria-describedby={descriptionId}
-              className={cn(styles.content, className)}
-              {...props}
-            >
-              {children}
-            </div>
-          </FocusTrap>
-        </div>
-      </Portal>
+      <BaseDialog.Popup ref={ref} className={cn(styles.content, className)} {...props}>
+        {children}
+      </BaseDialog.Popup>
     );
   },
 );
@@ -258,12 +175,10 @@ export interface DialogTitleProps extends ComponentPropsWithoutRef<"h2"> {
 
 const DialogTitle = forwardRef<HTMLHeadingElement, DialogTitleProps>(
   ({ children, className, ...props }, ref) => {
-    const { titleId } = useDialog();
-
     return (
-      <h2 ref={ref} id={titleId} className={cn(styles.title, className)} {...props}>
+      <BaseDialog.Title ref={ref} className={cn(styles.title, className)} {...props}>
         {children}
-      </h2>
+      </BaseDialog.Title>
     );
   },
 );
@@ -280,12 +195,10 @@ export interface DialogDescriptionProps extends ComponentPropsWithoutRef<"p"> {
 
 const DialogDescription = forwardRef<HTMLParagraphElement, DialogDescriptionProps>(
   ({ children, className, ...props }, ref) => {
-    const { descriptionId } = useDialog();
-
     return (
-      <p ref={ref} id={descriptionId} className={cn(styles.description, className)} {...props}>
+      <BaseDialog.Description ref={ref} className={cn(styles.description, className)} {...props}>
         {children}
-      </p>
+      </BaseDialog.Description>
     );
   },
 );
@@ -317,28 +230,31 @@ DialogFooter.displayName = "Dialog.Footer";
  * ============================================ */
 
 export interface DialogCloseProps extends ComponentPropsWithoutRef<"button"> {
+  /**
+   * Change the default rendered element for the one passed as a child
+   */
+  asChild?: boolean;
   children?: ReactNode;
 }
 
 const DialogClose = forwardRef<HTMLButtonElement, DialogCloseProps>(
-  ({ children, className, onClick, ...props }, ref) => {
-    const { setOpen } = useDialog();
-
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      setOpen(false);
-      onClick?.(e);
-    };
+  ({ children, className, asChild, ...props }, ref) => {
+    // When asChild is true, render the child element with Base UI behavior
+    if (asChild && React.isValidElement(children)) {
+      return (
+        <BaseDialog.Close
+          ref={ref}
+          render={children as React.ReactElement<Record<string, unknown>>}
+          className={cn(styles.close, className)}
+          {...props}
+        />
+      );
+    }
 
     return (
-      <button
-        ref={ref}
-        type="button"
-        className={cn(styles.close, className)}
-        onClick={handleClick}
-        {...props}
-      >
+      <BaseDialog.Close ref={ref} className={cn(styles.close, className)} {...props}>
         {children}
-      </button>
+      </BaseDialog.Close>
     );
   },
 );
@@ -352,6 +268,7 @@ DialogClose.displayName = "Dialog.Close";
 export const Dialog = {
   Root: DialogRoot,
   Trigger: DialogTrigger,
+  Portal: DialogPortal,
   Overlay: DialogOverlay,
   Content: DialogContent,
   Header: DialogHeader,

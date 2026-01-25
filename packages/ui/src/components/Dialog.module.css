@@ -2,6 +2,7 @@
  * Dialog - Modal content panel
  *
  * Centered modal with overlay backdrop.
+ * Uses Base UI for accessibility and behavior.
  * NO hard offset shadows - uses soft diffuse shadows.
  */
 
@@ -20,30 +21,20 @@
   background-color: var(--surface-overlay);
 
   /* Animation */
-  animation: overlay-in var(--duration-200) var(--ease-out);
+  opacity: 0;
+  transition: opacity var(--duration-200) var(--ease-out);
 }
 
-@keyframes overlay-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.overlay[data-open] {
+  opacity: 1;
 }
 
-/* ============================================
- * CONTENT WRAPPER
- * ============================================ */
+.overlay[data-starting-style] {
+  opacity: 0;
+}
 
-.contentWrapper {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-modal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
+.overlay[data-ending-style] {
+  opacity: 0;
 }
 
 /* ============================================
@@ -51,9 +42,12 @@
  * ============================================ */
 
 .content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--z-modal);
+  width: calc(100% - var(--space-8));
   max-width: 500px;
   max-height: calc(100vh - var(--space-8));
   overflow-y: auto;
@@ -63,18 +57,26 @@
   box-shadow: var(--shadow-elevation-4);
 
   /* Animation */
-  animation: dialog-in var(--duration-200) var(--ease-out);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+  transition:
+    opacity var(--duration-200) var(--ease-out),
+    transform var(--duration-200) var(--ease-out);
 }
 
-@keyframes dialog-in {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.content[data-open] {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.content[data-starting-style] {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.content[data-ending-style] {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
 }
 
 /* ============================================
@@ -157,4 +159,15 @@
 .close:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
+}
+
+/* ============================================
+ * REDUCED MOTION
+ * ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay,
+  .content {
+    transition: none;
+  }
 }

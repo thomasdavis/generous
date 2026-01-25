@@ -1,5 +1,7 @@
 /**
  * Tabs - Navigation between content sections
+ *
+ * Uses Base UI for keyboard navigation.
  */
 
 .root {
@@ -16,13 +18,14 @@
  * ============================================ */
 
 .list {
+  position: relative;
   display: flex;
   gap: var(--space-1);
   border-bottom: 1px solid var(--border-default);
   padding-bottom: var(--space-px);
 }
 
-.list[data-orientation="vertical"] {
+.root[data-orientation="vertical"] .list {
   flex-direction: column;
   border-bottom: none;
   border-right: 1px solid var(--border-default);
@@ -56,7 +59,7 @@
     background-color var(--duration-150) var(--ease-out);
 }
 
-.list[data-orientation="vertical"] .trigger {
+.root[data-orientation="vertical"] .trigger {
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   justify-content: flex-start;
 }
@@ -76,13 +79,13 @@
   cursor: not-allowed;
 }
 
-/* Active state */
-.trigger[data-state="active"] {
+/* Active state - Base UI uses data-selected */
+.trigger[data-selected] {
   color: var(--text-primary);
 }
 
 /* Active indicator - bottom border */
-.trigger[data-state="active"]::after {
+.trigger[data-selected]::after {
   content: "";
   position: absolute;
   bottom: -1px;
@@ -92,13 +95,40 @@
   background-color: var(--action-primary-bg);
 }
 
-.list[data-orientation="vertical"] .trigger[data-state="active"]::after {
+.root[data-orientation="vertical"] .trigger[data-selected]::after {
   bottom: 0;
   left: auto;
   right: -1px;
   top: 0;
   width: 2px;
   height: auto;
+}
+
+/* ============================================
+ * INDICATOR (Animated)
+ * ============================================ */
+
+.indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background-color: var(--action-primary-bg);
+  transition:
+    left var(--duration-200) var(--ease-out),
+    width var(--duration-200) var(--ease-out);
+}
+
+.root[data-orientation="vertical"] .indicator {
+  bottom: 0;
+  left: auto;
+  right: -1px;
+  top: 0;
+  width: 2px;
+  height: auto;
+  transition:
+    top var(--duration-200) var(--ease-out),
+    height var(--duration-200) var(--ease-out);
 }
 
 /* ============================================
@@ -113,11 +143,22 @@
   outline: none;
 }
 
-.content[data-state="inactive"] {
+.content[hidden] {
   display: none;
 }
 
 .root[data-orientation="vertical"] .content {
   padding: 0 0 0 var(--space-4);
   flex: 1;
+}
+
+/* ============================================
+ * REDUCED MOTION
+ * ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger,
+  .indicator {
+    transition: none;
+  }
 }
