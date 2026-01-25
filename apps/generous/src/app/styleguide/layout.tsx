@@ -50,6 +50,7 @@ const navigation = [
   {
     title: "Resources",
     items: [
+      { label: "Component Catalog", href: "/styleguide/catalog" },
       { label: "Accessibility", href: "/styleguide/accessibility" },
       { label: "Guidelines", href: "/styleguide/guidelines" },
     ],
