@@ -88,22 +88,33 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const Comp = asChild ? Slot : "button";
     const isDisabled = disabled || loading;
 
+    const sharedProps = {
+      ref,
+      className: cn(styles.root, className),
+      ...dataAttrs({
+        variant,
+        size,
+        "full-width": fullWidth,
+        loading,
+      }),
+      ...props,
+    };
+
+    // When asChild is true, pass the single child directly to Slot
+    // The child element receives the button's styling props
+    if (asChild) {
+      return (
+        <Slot {...sharedProps} disabled={isDisabled}>
+          {children}
+        </Slot>
+      );
+    }
+
+    // Standard button rendering with icons and loading state
     return (
-      <Comp
-        ref={ref}
-        className={cn(styles.root, className)}
-        disabled={isDisabled}
-        {...dataAttrs({
-          variant,
-          size,
-          "full-width": fullWidth,
-          loading,
-        })}
-        {...props}
-      >
+      <button {...sharedProps} disabled={isDisabled}>
         {loading && (
           <span className={styles.spinner} aria-hidden="true">
             <svg aria-hidden="true" viewBox="0 0 24 24" className={styles.spinnerIcon}>
@@ -131,7 +142,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {iconRight}
           </span>
         )}
-      </Comp>
+      </button>
     );
   },
 );
