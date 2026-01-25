@@ -44,15 +44,20 @@ function ToolPartHandler({
   part,
   toolName,
   onComponentCreated,
+  isFromHistory,
 }: {
   part: ToolPart;
   toolName: string;
   onComponentCreated?: (output: ComponentToolOutput) => void;
+  isFromHistory?: boolean;
 }) {
   const { state, output } = part;
   const hasNotified = useRef(false);
 
   useEffect(() => {
+    // Don't create components for messages loaded from history - they already have persisted components
+    if (isFromHistory) return;
+
     if (
       state === "output-available" &&
       isComponentOutput(output) &&
@@ -63,7 +68,7 @@ function ToolPartHandler({
       hasNotified.current = true;
       onComponentCreated(output);
     }
-  }, [state, output, onComponentCreated]);
+  }, [state, output, onComponentCreated, isFromHistory]);
 
   if (state !== "output-available") {
     return (
@@ -109,9 +114,11 @@ function ToolPartHandler({
 function MessageItem({
   message,
   onComponentCreated,
+  isFromHistory,
 }: {
   message: ChatMessage | { id: string; role: string; parts?: unknown[] };
   onComponentCreated: (output: ComponentToolOutput) => void;
+  isFromHistory?: boolean;
 }) {
   const parts = "parts" in message ? message.parts : undefined;
   const content = "content" in message ? message.content : undefined;
@@ -135,6 +142,7 @@ function MessageItem({
               part={part as ToolPart}
               toolName={toolName}
               onComponentCreated={onComponentCreated}
+              isFromHistory={isFromHistory}
             />
           );
         }
@@ -164,12 +172,15 @@ export function Chat() {
   const addedComponents = useRef<Set<string>>(new Set());
   const savedMessageIds = useRef<Set<string>>(new Set());
 
-  // All messages combined (history + current session)
+  // All messages combined (history + current session), with isFromHistory flag
   const allMessages = useMemo(() => {
     // Filter out history messages that are now in the current messages
     const currentIds = new Set(messages.map((m) => m.id));
-    const filteredHistory = loadedHistory.filter((m) => !currentIds.has(m.id));
-    return [...filteredHistory, ...messages];
+    const filteredHistory = loadedHistory
+      .filter((m) => !currentIds.has(m.id))
+      .map((m) => ({ ...m, isFromHistory: true as const }));
+    const currentMessages = messages.map((m) => ({ ...m, isFromHistory: false as const }));
+    return [...filteredHistory, ...currentMessages];
   }, [loadedHistory, messages]);
 
   // Load initial chat history
@@ -393,6 +404,7 @@ export function Chat() {
                 key={message.id}
                 message={message}
                 onComponentCreated={handleComponentCreated}
+                isFromHistory={message.isFromHistory}
               />
             )}
           />

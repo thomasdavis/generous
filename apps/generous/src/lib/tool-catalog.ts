@@ -204,6 +204,45 @@ export const toolCatalog = createCatalog({
       }),
       description: "Math calculation display",
     },
+
+    // Dynamic Data Components
+    DataList: {
+      props: z.object({
+        endpoint: z.string(),
+        dataKey: z.string().nullable(),
+        emptyMessage: z.string().nullable(),
+        refreshInterval: z.number().nullable(),
+      }),
+      hasChildren: true,
+      description: "Fetches data from an API endpoint and displays children. Data auto-refreshes.",
+    },
+
+    PetCard: {
+      props: z.object({
+        name: z.string(),
+        species: z.string(),
+        breed: z.string().nullable(),
+        age: z.number().nullable(),
+        price: z.number(),
+        status: z.string(),
+        description: z.string().nullable(),
+      }),
+      description: "Displays a single pet with name, species, breed, age, price, and status.",
+    },
+
+    PetList: {
+      props: z.object({
+        status: z.enum(["available", "pending", "adopted"]).nullable(),
+        species: z.enum(["dog", "cat", "bird", "fish", "rabbit"]).nullable(),
+        refreshInterval: z.number().nullable(),
+        fields: z
+          .array(z.enum(["name", "species", "breed", "age", "price", "status", "description"]))
+          .nullable(),
+        layout: z.enum(["cards", "list", "compact"]).nullable(),
+      }),
+      description:
+        "Fetches and displays a list of pets from /api/pets. Use 'fields' to control which data is shown and 'layout' to choose display style.",
+    },
   },
 });
 
@@ -242,4 +281,24 @@ Badge: Status badge with text and variant (default|success|warning|danger|info).
 Divider: Visual divider with optional label.
 Timer: Countdown with duration (seconds), label, endsAt (timestamp).
 Calculation: Math display with expression and result strings.
+
+DYNAMIC DATA COMPONENTS (for live data from APIs):
+PetList: Fetches and displays pets from /api/pets. Props:
+  - status: (available|pending|adopted) - filter by status
+  - species: (dog|cat|bird|fish|rabbit) - filter by species
+  - fields: array of fields to show: ["name", "price"] or ["name", "species", "price", "status"]
+  - layout: "cards" (full cards), "list" (compact rows), "compact" (minimal rows)
+  - refreshInterval: (ms) - auto-refresh interval, default 5000ms
+
+  Examples:
+  - Show only name and price: {"type":"PetList","props":{"fields":["name","price"],"layout":"compact"},"children":[]}
+  - Show all available pets: {"type":"PetList","props":{"status":"available"},"children":[]}
+  - Show dogs with name, breed, price: {"type":"PetList","props":{"species":"dog","fields":["name","breed","price"],"layout":"list"},"children":[]}
+
+PetCard: Displays a single pet. Props: name, species, breed, age, price (cents), status, description.
+DataList: Generic data fetcher. Props: endpoint (API URL), dataKey (key in response), emptyMessage, refreshInterval.
+
+IMPORTANT: When creating components that need LIVE data from APIs (like pets, products, etc.), use PetList or DataList.
+These components fetch data dynamically and auto-refresh, so new data will appear automatically.
+Use the 'fields' prop to customize which data is displayed - this is key for creating focused views.
 `;

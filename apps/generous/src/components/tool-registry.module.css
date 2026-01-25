@@ -1,0 +1,861 @@
+/**
+ * Tool Registry Components - CSS Module
+ * Uses design tokens from @generous/ui
+ */
+
+/* ============================================
+ * INTERACTIVE CARD
+ * ============================================ */
+
+.interactiveCard {
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition:
+    transform var(--duration-150) var(--ease-out),
+    box-shadow var(--duration-150) var(--ease-out);
+}
+
+.interactiveCard[data-padding="sm"] {
+  padding: var(--space-2);
+}
+.interactiveCard[data-padding="md"] {
+  padding: var(--space-3);
+}
+.interactiveCard[data-padding="lg"] {
+  padding: var(--space-4);
+}
+
+.interactiveCard[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.interactiveCard[data-clickable="true"]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Color variants - gradient backgrounds */
+.interactiveCard[data-color="default"] {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.interactiveCard[data-color="blue"] {
+  background: linear-gradient(135deg, oklch(0.64 0.18 240), oklch(0.54 0.16 240));
+  color: var(--color-white);
+}
+
+.interactiveCard[data-color="green"] {
+  background: linear-gradient(135deg, oklch(0.68 0.2 145), oklch(0.58 0.17 145));
+  color: var(--color-white);
+}
+
+.interactiveCard[data-color="red"] {
+  background: linear-gradient(135deg, oklch(0.62 0.22 25), oklch(0.52 0.2 25));
+  color: var(--color-white);
+}
+
+.interactiveCard[data-color="purple"] {
+  background: linear-gradient(135deg, oklch(0.6 0.22 300), oklch(0.5 0.2 300));
+  color: var(--color-white);
+}
+
+.interactiveCard[data-color="orange"] {
+  background: linear-gradient(135deg, oklch(0.75 0.22 55), oklch(0.65 0.19 50));
+  color: var(--color-white);
+}
+
+.interactiveCard[data-color="yellow"] {
+  background: linear-gradient(135deg, oklch(0.85 0.18 95), oklch(0.8 0.2 90));
+  color: var(--color-gray-900);
+}
+
+.interactiveCard[data-color="pink"] {
+  background: linear-gradient(135deg, oklch(0.7 0.22 0), oklch(0.6 0.25 355));
+  color: var(--color-white);
+}
+
+.interactiveCard[data-color="teal"] {
+  background: linear-gradient(135deg, oklch(0.7 0.14 185), oklch(0.6 0.12 185));
+  color: var(--color-white);
+}
+
+.interactiveCardTitle {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+/* ============================================
+ * CARD (simpler, non-interactive)
+ * ============================================ */
+
+.card {
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.card[data-padding="sm"] {
+  padding: var(--space-2);
+}
+.card[data-padding="md"] {
+  padding: var(--space-3);
+}
+.card[data-padding="lg"] {
+  padding: var(--space-4);
+}
+
+.card[data-variant="default"] {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+}
+
+.card[data-variant="gradient"] {
+  background: linear-gradient(135deg, oklch(0.64 0.18 240), oklch(0.54 0.16 240));
+  color: var(--color-white);
+}
+
+.card[data-variant="outline"] {
+  background: transparent;
+  border: 1px solid var(--border-default);
+}
+
+.cardTitle {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+/* ============================================
+ * GRID
+ * ============================================ */
+
+.grid {
+  display: grid;
+}
+
+.grid[data-columns="1"] {
+  grid-template-columns: repeat(1, 1fr);
+}
+.grid[data-columns="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+.grid[data-columns="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+.grid[data-columns="4"] {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid[data-gap="sm"] {
+  gap: var(--space-2);
+}
+.grid[data-gap="md"] {
+  gap: var(--space-3);
+}
+.grid[data-gap="lg"] {
+  gap: var(--space-4);
+}
+
+/* ============================================
+ * STACK
+ * ============================================ */
+
+.stack {
+  display: flex;
+}
+
+.stack[data-direction="vertical"] {
+  flex-direction: column;
+}
+.stack[data-direction="horizontal"] {
+  flex-direction: row;
+}
+
+.stack[data-gap="sm"] {
+  gap: var(--space-1);
+}
+.stack[data-gap="md"] {
+  gap: var(--space-2);
+}
+.stack[data-gap="lg"] {
+  gap: var(--space-3);
+}
+
+.stack[data-align="start"] {
+  align-items: flex-start;
+}
+.stack[data-align="center"] {
+  align-items: center;
+}
+.stack[data-align="end"] {
+  align-items: flex-end;
+}
+.stack[data-align="stretch"] {
+  align-items: stretch;
+}
+
+/* ============================================
+ * METRIC
+ * ============================================ */
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.metricLabel {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.metricValue {
+  font-weight: var(--font-semibold);
+}
+
+.metricValue[data-size="sm"] {
+  font-size: var(--text-xl);
+}
+.metricValue[data-size="md"] {
+  font-size: var(--text-2xl);
+}
+.metricValue[data-size="lg"] {
+  font-size: var(--text-4xl);
+}
+.metricValue[data-size="xl"] {
+  font-size: var(--text-5xl);
+}
+
+.metricUnit {
+  margin-left: var(--space-1);
+  opacity: 0.7;
+}
+
+.metricTrend {
+  font-size: var(--text-xs);
+}
+
+.metricTrend[data-trend="up"] {
+  color: var(--state-success-text);
+}
+.metricTrend[data-trend="down"] {
+  color: var(--state-error-text);
+}
+.metricTrend[data-trend="neutral"] {
+  color: var(--text-tertiary);
+}
+
+/* ============================================
+ * PROGRESS BAR
+ * ============================================ */
+
+.progressBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.progressBarLabel {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.progressBarTrack {
+  height: var(--space-2);
+  background: var(--surface-tertiary);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: var(--radius-default);
+  transition: width var(--duration-200) var(--ease-out);
+}
+
+.progressBarFill[data-color="blue"] {
+  background: oklch(0.64 0.18 240);
+}
+.progressBarFill[data-color="green"] {
+  background: var(--state-success-icon);
+}
+.progressBarFill[data-color="yellow"] {
+  background: var(--state-warning-icon);
+}
+.progressBarFill[data-color="red"] {
+  background: var(--state-error-icon);
+}
+
+/* ============================================
+ * WEATHER ICON
+ * ============================================ */
+
+.weatherIcon[data-size="sm"] {
+  font-size: var(--text-2xl);
+}
+.weatherIcon[data-size="md"] {
+  font-size: var(--text-4xl);
+}
+.weatherIcon[data-size="lg"] {
+  font-size: var(--text-6xl);
+}
+
+/* ============================================
+ * FORECAST DAY
+ * ============================================ */
+
+.forecastDay {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.forecastDayName {
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+
+.forecastDayIcon {
+  font-size: var(--text-xl);
+}
+
+.forecastDayHigh {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+.forecastDayLow {
+  font-size: var(--text-xs);
+  opacity: 0.6;
+}
+
+/* ============================================
+ * PRICE CHANGE
+ * ============================================ */
+
+.priceChange {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.priceChange[data-positive="true"] {
+  color: var(--state-success-text);
+}
+.priceChange[data-positive="false"] {
+  color: var(--state-error-text);
+}
+
+/* ============================================
+ * STOCK STAT
+ * ============================================ */
+
+.stockStat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+
+.stockStatLabel {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.stockStatValue {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+/* ============================================
+ * SEARCH RESULT
+ * ============================================ */
+
+.searchResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: background var(--duration-150) var(--ease-out);
+}
+
+.searchResult:hover {
+  background: var(--surface-hover);
+}
+
+.searchResultTitle {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-link);
+}
+
+.searchResultUrl {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.searchResultSnippet {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============================================
+ * HEADING
+ * ============================================ */
+
+.heading {
+  font-weight: var(--font-semibold);
+}
+
+.heading[data-level="h1"] {
+  font-size: var(--text-2xl);
+}
+.heading[data-level="h2"] {
+  font-size: var(--text-xl);
+}
+.heading[data-level="h3"] {
+  font-size: var(--text-base);
+}
+.heading[data-level="h4"] {
+  font-size: var(--text-sm);
+}
+
+/* ============================================
+ * TEXT
+ * ============================================ */
+
+.text[data-variant="body"] {
+  font-size: var(--text-sm);
+}
+.text[data-variant="caption"] {
+  font-size: var(--text-xs);
+  opacity: 0.7;
+}
+.text[data-variant="label"] {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.text[data-color="default"] {
+  color: inherit;
+}
+.text[data-color="muted"] {
+  color: var(--text-tertiary);
+}
+.text[data-color="success"] {
+  color: var(--state-success-text);
+}
+.text[data-color="warning"] {
+  color: var(--state-warning-text);
+}
+.text[data-color="danger"] {
+  color: var(--state-error-text);
+}
+
+/* ============================================
+ * BADGE (custom, for when not using @generous/ui)
+ * ============================================ */
+
+.badge {
+  display: inline-block;
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-default);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+}
+
+.badge[data-variant="default"] {
+  background: var(--surface-tertiary);
+  color: var(--text-primary);
+}
+
+.badge[data-variant="success"] {
+  background: var(--state-success-bg);
+  color: var(--state-success-text);
+}
+
+.badge[data-variant="warning"] {
+  background: var(--state-warning-bg);
+  color: var(--state-warning-text);
+}
+
+.badge[data-variant="danger"] {
+  background: var(--state-error-bg);
+  color: var(--state-error-text);
+}
+
+.badge[data-variant="info"] {
+  background: var(--state-info-bg);
+  color: var(--state-info-text);
+}
+
+/* ============================================
+ * DIVIDER
+ * ============================================ */
+
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.dividerWithLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.dividerLabel {
+  font-size: var(--text-xs);
+  opacity: 0.6;
+}
+
+/* ============================================
+ * TIMER
+ * ============================================ */
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.timerLabel {
+  font-size: var(--text-sm);
+}
+
+.timerDisplay {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-semibold);
+  font-family: var(--font-mono);
+}
+
+/* ============================================
+ * CALCULATION
+ * ============================================ */
+
+.calculation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+}
+
+.calculationExpr {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.calculationResult {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+}
+
+/* ============================================
+ * BUTTON (custom for json-render)
+ * ============================================ */
+
+.button {
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: var(--font-medium);
+  transition:
+    background var(--duration-150) var(--ease-out),
+    transform var(--duration-75) var(--ease-out);
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button[data-size="sm"] {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.button[data-size="md"] {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.button[data-size="lg"] {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+}
+
+.button[data-variant="primary"] {
+  background: var(--action-primary-bg);
+  color: var(--action-primary-text);
+  border: none;
+}
+
+.button[data-variant="primary"]:hover {
+  background: var(--action-primary-bg-hover);
+}
+
+.button[data-variant="secondary"] {
+  background: var(--action-secondary-bg);
+  color: var(--action-secondary-text);
+  border: none;
+}
+
+.button[data-variant="secondary"]:hover {
+  background: var(--action-secondary-bg-hover);
+}
+
+.button[data-variant="outline"] {
+  background: transparent;
+  color: var(--text-link);
+  border: 1px solid var(--border-strong);
+}
+
+.button[data-variant="outline"]:hover {
+  background: var(--surface-hover);
+}
+
+.button[data-variant="danger"] {
+  background: var(--action-destructive-bg);
+  color: var(--action-destructive-text);
+  border: none;
+}
+
+.button[data-variant="danger"]:hover {
+  background: var(--action-destructive-bg-hover);
+}
+
+/* ============================================
+ * DATA LIST
+ * ============================================ */
+
+.dataList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dataListLoading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+}
+
+.dataListSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dataListError {
+  padding: var(--space-4);
+  color: var(--state-error-text);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.dataListEmpty {
+  padding: var(--space-4);
+  color: var(--text-tertiary);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+/* ============================================
+ * PET LIST
+ * ============================================ */
+
+.petList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.petListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.petListItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-150) var(--ease-out);
+}
+
+.petListItem:hover {
+  border-color: var(--border-strong);
+}
+
+.petListItemField {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.petListItemField[data-field="name"] {
+  font-weight: var(--font-semibold);
+}
+
+.petListItemField[data-field="price"] {
+  color: var(--color-green-500);
+  font-weight: var(--font-medium);
+}
+
+.petListItemField[data-field="species"],
+.petListItemField[data-field="breed"],
+.petListItemField[data-field="status"] {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+}
+
+.petListItemField[data-field="age"] {
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.petListItemField[data-field="description"] {
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================
+ * PET CARD
+ * ============================================ */
+
+.petCard {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: border-color var(--duration-150) var(--ease-out);
+}
+
+.petCard:hover {
+  border-color: var(--border-strong);
+}
+
+.petCard[data-status="adopted"] {
+  opacity: 0.6;
+}
+
+.petCardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.petCardEmoji {
+  font-size: var(--text-2xl);
+}
+
+.petCardInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-0-5);
+}
+
+.petCardName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.petCardBreed {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.petCardStatus {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: var(--space-0-5) var(--space-2);
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+}
+
+.petCardStatus[data-status="available"] {
+  background: var(--state-success-bg);
+  color: var(--state-success-text);
+}
+
+.petCardStatus[data-status="pending"] {
+  background: var(--state-warning-bg);
+  color: var(--state-warning-text);
+}
+
+.petCardStatus[data-status="adopted"] {
+  background: var(--surface-tertiary);
+  color: var(--text-tertiary);
+}
+
+.petCardDescription {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+.petCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.petCardAge {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.petCardPrice {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}

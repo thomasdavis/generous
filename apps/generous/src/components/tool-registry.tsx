@@ -2,6 +2,11 @@
 
 import type { ComponentRenderProps } from "@json-render/react";
 import { useDataValue } from "@json-render/react";
+import useSWR from "swr";
+import styles from "./tool-registry.module.css";
+
+// Fetcher for SWR
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Button Component - triggers actions
 export function Button({ element, onAction }: ComponentRenderProps) {
@@ -12,31 +17,13 @@ export function Button({ element, onAction }: ComponentRenderProps) {
     size?: string | null;
   };
 
-  const sizeMap = {
-    sm: { padding: "4px 8px", fontSize: 12 },
-    md: { padding: "8px 16px", fontSize: 14 },
-    lg: { padding: "12px 24px", fontSize: 16 },
-  };
-  const s = sizeMap[(size as keyof typeof sizeMap) || "md"];
-
-  const variantStyles: Record<string, React.CSSProperties> = {
-    primary: { background: "#3b82f6", color: "white", border: "none" },
-    secondary: { background: "#e0e0e0", color: "#333", border: "none" },
-    outline: { background: "transparent", color: "#3b82f6", border: "1px solid #3b82f6" },
-    danger: { background: "#ef4444", color: "white", border: "none" },
-  };
-
   return (
     <button
       type="button"
       onClick={() => action && onAction?.(action)}
-      style={{
-        ...s,
-        borderRadius: 6,
-        cursor: "pointer",
-        fontWeight: 500,
-        ...variantStyles[variant || "primary"],
-      }}
+      className={styles.button}
+      data-variant={variant || "primary"}
+      data-size={size || "md"}
     >
       {label}
     </button>
@@ -56,41 +43,40 @@ export function InteractiveCard({ element, children, onAction }: ComponentRender
   const dataColor = useDataValue(colorPath || "");
   const color = typeof dataColor === "string" ? dataColor : null;
 
-  const paddingMap = { sm: 8, md: 12, lg: 16 };
-  const p = paddingMap[(padding as keyof typeof paddingMap) || "md"];
+  // Debug logging
+  console.log(
+    "[InteractiveCard] colorPath:",
+    colorPath,
+    "dataColor:",
+    dataColor,
+    "color:",
+    color,
+    "onAction:",
+    !!onAction,
+    "action:",
+    action,
+  );
 
-  const colorStyles: Record<string, React.CSSProperties> = {
-    blue: { background: "linear-gradient(135deg, #3b82f6, #2563eb)", color: "white" },
-    green: { background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "white" },
-    red: { background: "linear-gradient(135deg, #ef4444, #dc2626)", color: "white" },
-    purple: { background: "linear-gradient(135deg, #8b5cf6, #7c3aed)", color: "white" },
-    orange: { background: "linear-gradient(135deg, #f97316, #ea580c)", color: "white" },
-    yellow: { background: "linear-gradient(135deg, #eab308, #ca8a04)", color: "white" },
-    pink: { background: "linear-gradient(135deg, #ec4899, #db2777)", color: "white" },
-    teal: { background: "linear-gradient(135deg, #14b8a6, #0d9488)", color: "white" },
-    default: { background: "#f5f5f5", border: "1px solid #e0e0e0" },
+  const handleClick = () => {
+    console.log("[InteractiveCard] clicked! action:", action, "onAction:", !!onAction);
+    if (action && onAction) {
+      console.log("[InteractiveCard] calling onAction with:", action);
+      onAction(action);
+    }
   };
-
-  const style = colorStyles[color || "default"];
 
   return (
     <div
-      onClick={() => action && onAction?.(action)}
-      onKeyDown={(e) => e.key === "Enter" && action && onAction?.(action)}
+      onClick={handleClick}
+      onKeyDown={(e) => e.key === "Enter" && handleClick()}
       role={action ? "button" : undefined}
       tabIndex={action ? 0 : undefined}
-      style={{
-        borderRadius: 12,
-        padding: p,
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        cursor: action ? "pointer" : "default",
-        transition: "transform 0.15s, box-shadow 0.15s",
-        ...style,
-      }}
+      className={styles.interactiveCard}
+      data-color={color || "default"}
+      data-padding={padding || "md"}
+      data-clickable={action ? "true" : "false"}
     >
-      {title && <div style={{ fontWeight: 600, fontSize: 14 }}>{title}</div>}
+      {title && <div className={styles.interactiveCardTitle}>{title}</div>}
       {children}
     </div>
   );
@@ -104,26 +90,9 @@ export function Card({ element, children }: ComponentRenderProps) {
     padding?: string | null;
   };
 
-  const paddingMap = { sm: 8, md: 12, lg: 16 };
-  const p = paddingMap[(padding as keyof typeof paddingMap) || "md"];
-
-  const baseStyle: React.CSSProperties = {
-    borderRadius: 12,
-    padding: p,
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-  };
-
-  const variantStyles: Record<string, React.CSSProperties> = {
-    default: { background: "#f5f5f5", border: "1px solid #e0e0e0" },
-    gradient: { background: "linear-gradient(135deg, #3b82f6, #2563eb)", color: "white" },
-    outline: { background: "transparent", border: "1px solid #e0e0e0" },
-  };
-
   return (
-    <div style={{ ...baseStyle, ...variantStyles[variant || "default"] }}>
-      {title && <div style={{ fontWeight: 600, fontSize: 14 }}>{title}</div>}
+    <div className={styles.card} data-variant={variant || "default"} data-padding={padding || "md"}>
+      {title && <div className={styles.cardTitle}>{title}</div>}
       {children}
     </div>
   );
@@ -136,16 +105,8 @@ export function Grid({ element, children }: ComponentRenderProps) {
     gap?: string | null;
   };
 
-  const gapMap = { sm: 8, md: 12, lg: 16 };
-
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${columns || 2}, 1fr)`,
-        gap: gapMap[(gap as keyof typeof gapMap) || "md"],
-      }}
-    >
+    <div className={styles.grid} data-columns={columns || 2} data-gap={gap || "md"}>
       {children}
     </div>
   );
@@ -159,22 +120,12 @@ export function Stack({ element, children }: ComponentRenderProps) {
     align?: string | null;
   };
 
-  const gapMap = { sm: 4, md: 8, lg: 12 };
-  const alignMap: Record<string, string> = {
-    start: "flex-start",
-    center: "center",
-    end: "flex-end",
-    stretch: "stretch",
-  };
-
   return (
     <div
-      style={{
-        display: "flex",
-        flexDirection: direction === "horizontal" ? "row" : "column",
-        gap: gapMap[(gap as keyof typeof gapMap) || "md"],
-        alignItems: alignMap[align || "stretch"],
-      }}
+      className={styles.stack}
+      data-direction={direction === "horizontal" ? "horizontal" : "vertical"}
+      data-gap={gap || "md"}
+      data-align={align || "stretch"}
     >
       {children}
     </div>
@@ -192,26 +143,27 @@ export function Metric({ element }: ComponentRenderProps) {
     size?: string | null;
   };
 
-  const sizeMap = { sm: 20, md: 28, lg: 36, xl: 48 };
-  const fontSize = sizeMap[(size as keyof typeof sizeMap) || "lg"];
+  // Map size prop to data attribute
+  const sizeMap: Record<string, string> = { sm: "sm", md: "md", lg: "lg", xl: "xl" };
+  const sizeAttr = sizeMap[size || "lg"] || "lg";
 
-  const trendColors: Record<string, string> = {
-    up: "#22c55e",
-    down: "#ef4444",
-    neutral: "#888",
-  };
+  // Calculate unit font size based on value size
+  const unitSizeMap: Record<string, string> = { sm: "10px", md: "12px", lg: "18px", xl: "24px" };
+  const unitFontSize = unitSizeMap[sizeAttr];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 12, color: "#888", textTransform: "uppercase" }}>{label}</span>
-      <span style={{ fontSize, fontWeight: 600 }}>
+    <div className={styles.metric}>
+      <span className={styles.metricLabel}>{label}</span>
+      <span className={styles.metricValue} data-size={sizeAttr}>
         {value}
         {unit && (
-          <span style={{ fontSize: fontSize * 0.5, marginLeft: 4, opacity: 0.7 }}>{unit}</span>
+          <span className={styles.metricUnit} style={{ fontSize: unitFontSize }}>
+            {unit}
+          </span>
         )}
       </span>
       {(trend || trendValue) && (
-        <span style={{ fontSize: 12, color: trendColors[trend || "neutral"] }}>
+        <span className={styles.metricTrend} data-trend={trend || "neutral"}>
           {trend === "up" ? "↑" : trend === "down" ? "↓" : ""}
           {trendValue}
         </span>
@@ -220,7 +172,7 @@ export function Metric({ element }: ComponentRenderProps) {
   );
 }
 
-// Sparkline Component
+// Sparkline Component - keep inline styles for SVG
 export function Sparkline({ element }: ComponentRenderProps) {
   const { data, color, height } = element.props as {
     data: number[];
@@ -230,10 +182,10 @@ export function Sparkline({ element }: ComponentRenderProps) {
 
   const h = height || 40;
   const colorMap: Record<string, string> = {
-    green: "#22c55e",
-    red: "#ef4444",
-    blue: "#3b82f6",
-    gray: "#888",
+    green: "oklch(0.68 0.2 145)",
+    red: "oklch(0.62 0.22 25)",
+    blue: "oklch(0.64 0.18 240)",
+    gray: "var(--text-tertiary)",
   };
   const strokeColor = colorMap[color || "blue"];
 
@@ -274,26 +226,16 @@ export function ProgressBar({ element }: ComponentRenderProps) {
     color?: string | null;
   };
 
-  const colorMap: Record<string, string> = {
-    blue: "#3b82f6",
-    green: "#22c55e",
-    yellow: "#eab308",
-    red: "#ef4444",
-  };
-
   const percent = Math.min(100, (value / (max || 100)) * 100);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-      {label && <span style={{ fontSize: 12, color: "#888" }}>{label}</span>}
-      <div style={{ height: 8, background: "#e0e0e0", borderRadius: 4, overflow: "hidden" }}>
+    <div className={styles.progressBar}>
+      {label && <span className={styles.progressBarLabel}>{label}</span>}
+      <div className={styles.progressBarTrack}>
         <div
-          style={{
-            height: "100%",
-            width: `${percent}%`,
-            background: colorMap[color || "blue"],
-            borderRadius: 4,
-          }}
+          className={styles.progressBarFill}
+          data-color={color || "blue"}
+          style={{ width: `${percent}%` }}
         />
       </div>
     </div>
@@ -307,9 +249,6 @@ export function WeatherIcon({ element }: ComponentRenderProps) {
     size?: string | null;
   };
 
-  const sizeMap = { sm: 24, md: 40, lg: 56 };
-  const s = sizeMap[(size as keyof typeof sizeMap) || "md"];
-
   const icons: Record<string, string> = {
     sunny: "☀️",
     cloudy: "☁️",
@@ -319,7 +258,11 @@ export function WeatherIcon({ element }: ComponentRenderProps) {
     stormy: "⛈️",
   };
 
-  return <span style={{ fontSize: s }}>{icons[condition] || "🌡️"}</span>;
+  return (
+    <span className={styles.weatherIcon} data-size={size || "md"}>
+      {icons[condition] || "🌡️"}
+    </span>
+  );
 }
 
 // ForecastDay Component
@@ -340,11 +283,11 @@ export function ForecastDay({ element }: ComponentRenderProps) {
   };
 
   return (
-    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 12, opacity: 0.8 }}>{day}</span>
-      <span style={{ fontSize: 20 }}>{icons[condition] || "🌡️"}</span>
-      <span style={{ fontSize: 14, fontWeight: 600 }}>{high}°</span>
-      <span style={{ fontSize: 12, opacity: 0.6 }}>{low}°</span>
+    <div className={styles.forecastDay}>
+      <span className={styles.forecastDayName}>{day}</span>
+      <span className={styles.forecastDayIcon}>{icons[condition] || "🌡️"}</span>
+      <span className={styles.forecastDayHigh}>{high}°</span>
+      <span className={styles.forecastDayLow}>{low}°</span>
     </div>
   );
 }
@@ -357,11 +300,10 @@ export function PriceChange({ element }: ComponentRenderProps) {
   };
 
   const isPositive = change >= 0;
-  const color = isPositive ? "#22c55e" : "#ef4444";
   const arrow = isPositive ? "↑" : "↓";
 
   return (
-    <span style={{ color, fontSize: 14, fontWeight: 500 }}>
+    <span className={styles.priceChange} data-positive={isPositive}>
       {arrow} {isPositive ? "+" : ""}
       {change.toFixed(2)} ({changePercent.toFixed(2)}%)
     </span>
@@ -376,9 +318,9 @@ export function StockStat({ element }: ComponentRenderProps) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <span style={{ fontSize: 10, color: "#888", textTransform: "uppercase" }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 500 }}>{value}</span>
+    <div className={styles.stockStat}>
+      <span className={styles.stockStatLabel}>{label}</span>
+      <span className={styles.stockStatValue}>{value}</span>
     </div>
   );
 }
@@ -392,50 +334,10 @@ export function SearchResult({ element }: ComponentRenderProps) {
   };
 
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 4,
-        padding: 8,
-        borderRadius: 8,
-        textDecoration: "none",
-        transition: "background 0.15s",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#f5f5f5";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-      }}
-    >
-      <span style={{ fontSize: 14, fontWeight: 500, color: "#3b82f6" }}>{title}</span>
-      <span
-        style={{
-          fontSize: 11,
-          color: "#888",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {url}
-      </span>
-      <span
-        style={{
-          fontSize: 12,
-          color: "#666",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-          overflow: "hidden",
-        }}
-      >
-        {snippet}
-      </span>
+    <a href={url} target="_blank" rel="noopener noreferrer" className={styles.searchResult}>
+      <span className={styles.searchResultTitle}>{title}</span>
+      <span className={styles.searchResultUrl}>{url}</span>
+      <span className={styles.searchResultSnippet}>{snippet}</span>
     </a>
   );
 }
@@ -447,10 +349,11 @@ export function Heading({ element }: ComponentRenderProps) {
     level?: string | null;
   };
 
-  const sizes: Record<string, number> = { h1: 24, h2: 20, h3: 16, h4: 14 };
-  const fontSize = sizes[level || "h3"];
-
-  return <div style={{ fontSize, fontWeight: 600 }}>{text}</div>;
+  return (
+    <div className={styles.heading} data-level={level || "h3"}>
+      {text}
+    </div>
+  );
 }
 
 // Text Component
@@ -461,22 +364,8 @@ export function Text({ element }: ComponentRenderProps) {
     color?: string | null;
   };
 
-  const variantStyles: Record<string, React.CSSProperties> = {
-    body: { fontSize: 14 },
-    caption: { fontSize: 12, opacity: 0.7 },
-    label: { fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" },
-  };
-
-  const colorMap: Record<string, string> = {
-    default: "inherit",
-    muted: "#888",
-    success: "#22c55e",
-    warning: "#eab308",
-    danger: "#ef4444",
-  };
-
   return (
-    <span style={{ ...variantStyles[variant || "body"], color: colorMap[color || "default"] }}>
+    <span className={styles.text} data-variant={variant || "body"} data-color={color || "default"}>
       {content}
     </span>
   );
@@ -489,25 +378,8 @@ export function Badge({ element }: ComponentRenderProps) {
     variant?: string | null;
   };
 
-  const variantStyles: Record<string, React.CSSProperties> = {
-    default: { background: "#e0e0e0", color: "#333" },
-    success: { background: "#dcfce7", color: "#166534" },
-    warning: { background: "#fef9c3", color: "#854d0e" },
-    danger: { background: "#fee2e2", color: "#991b1b" },
-    info: { background: "#dbeafe", color: "#1e40af" },
-  };
-
   return (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "2px 8px",
-        borderRadius: 4,
-        fontSize: 11,
-        fontWeight: 500,
-        ...variantStyles[variant || "default"],
-      }}
-    >
+    <span className={styles.badge} data-variant={variant || "default"}>
       {text}
     </span>
   );
@@ -519,15 +391,15 @@ export function Divider({ element }: ComponentRenderProps) {
 
   if (label) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.2)" }} />
-        <span style={{ fontSize: 11, opacity: 0.6 }}>{label}</span>
-        <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.2)" }} />
+      <div className={styles.dividerWithLabel}>
+        <div className={styles.dividerLine} />
+        <span className={styles.dividerLabel}>{label}</span>
+        <div className={styles.dividerLine} />
       </div>
     );
   }
 
-  return <div style={{ height: 1, background: "rgba(255,255,255,0.2)" }} />;
+  return <div className={styles.divider} />;
 }
 
 // Timer Component
@@ -539,9 +411,9 @@ export function Timer({ element }: ComponentRenderProps) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-      {label && <span style={{ fontSize: 14 }}>{label}</span>}
-      <span style={{ fontSize: 32, fontWeight: 600, fontFamily: "monospace" }}>
+    <div className={styles.timer}>
+      {label && <span className={styles.timerLabel}>{label}</span>}
+      <span className={styles.timerDisplay}>
         {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
       </span>
     </div>
@@ -556,9 +428,250 @@ export function Calculation({ element }: ComponentRenderProps) {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8, fontFamily: "monospace" }}>
-      <span style={{ fontSize: 14, color: "#888" }}>{expression}</span>
-      <span style={{ fontSize: 28, fontWeight: 600 }}>= {result}</span>
+    <div className={styles.calculation}>
+      <span className={styles.calculationExpr}>{expression}</span>
+      <span className={styles.calculationResult}>= {result}</span>
+    </div>
+  );
+}
+
+// DataList Component - fetches data from an API and renders items
+export function DataList({ element, children }: ComponentRenderProps) {
+  const { endpoint, dataKey, emptyMessage, refreshInterval } = element.props as {
+    endpoint: string;
+    dataKey?: string | null;
+    emptyMessage?: string | null;
+    refreshInterval?: number | null;
+  };
+
+  const { data, error, isLoading } = useSWR(endpoint, fetcher, {
+    refreshInterval: refreshInterval || 0,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load data</div>;
+  }
+
+  // Extract the array from the response using dataKey (e.g., "pets" from { pets: [...] })
+  const items = dataKey && data ? data[dataKey] : data;
+
+  if (!items || (Array.isArray(items) && items.length === 0)) {
+    return <div className={styles.dataListEmpty}>{emptyMessage || "No items found"}</div>;
+  }
+
+  // Children will be rendered for each item via the DataListItem component
+  return <div className={styles.dataList}>{children}</div>;
+}
+
+// PetCard Component - displays a single pet
+export function PetCard({ element }: ComponentRenderProps) {
+  const { name, species, breed, age, price, status, description } = element.props as {
+    name: string;
+    species: string;
+    breed?: string | null;
+    age?: number | null;
+    price: number;
+    status: string;
+    description?: string | null;
+  };
+
+  const formatPrice = (cents: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(cents / 100);
+  };
+
+  const speciesEmoji: Record<string, string> = {
+    dog: "🐕",
+    cat: "🐱",
+    bird: "🐦",
+    fish: "🐠",
+    rabbit: "🐰",
+  };
+
+  return (
+    <div className={styles.petCard} data-status={status}>
+      <div className={styles.petCardHeader}>
+        <span className={styles.petCardEmoji}>{speciesEmoji[species] || "🐾"}</span>
+        <div className={styles.petCardInfo}>
+          <span className={styles.petCardName}>{name}</span>
+          <span className={styles.petCardBreed}>{breed || species}</span>
+        </div>
+        <span className={styles.petCardStatus} data-status={status}>
+          {status}
+        </span>
+      </div>
+      {description && <p className={styles.petCardDescription}>{description}</p>}
+      <div className={styles.petCardFooter}>
+        {age !== null && age !== undefined && (
+          <span className={styles.petCardAge}>
+            {age} {age === 1 ? "year" : "years"} old
+          </span>
+        )}
+        <span className={styles.petCardPrice}>{formatPrice(price)}</span>
+      </div>
+    </div>
+  );
+}
+
+// PetList Component - fetches and displays a list of pets from the API
+export function PetList({ element }: ComponentRenderProps) {
+  const { status, species, refreshInterval, fields, layout } = element.props as {
+    status?: string | null;
+    species?: string | null;
+    refreshInterval?: number | null;
+    fields?: string[] | null; // Which fields to display: name, species, breed, age, price, status, description
+    layout?: "cards" | "list" | "compact" | null;
+  };
+
+  // Build the API URL with query params
+  let url = "/api/pets";
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (species) params.set("species", species);
+  if (params.toString()) url += `?${params.toString()}`;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    refreshInterval: refreshInterval || 5000, // Refresh every 5 seconds by default
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading pets...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load pets</div>;
+  }
+
+  const pets = data?.pets || [];
+
+  if (pets.length === 0) {
+    return <div className={styles.dataListEmpty}>No pets found</div>;
+  }
+
+  // Default to all fields if not specified
+  const displayFields = fields || [
+    "name",
+    "species",
+    "breed",
+    "age",
+    "price",
+    "status",
+    "description",
+  ];
+  const displayLayout = layout || "cards";
+
+  // Format price from cents to dollars
+  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  // Compact/list layout - just show specified fields inline
+  if (displayLayout === "compact" || displayLayout === "list") {
+    return (
+      <div className={styles.petListCompact}>
+        {pets.map(
+          (pet: {
+            id: string;
+            name: string;
+            species: string;
+            breed?: string | null;
+            age?: number | null;
+            price: number;
+            status: string;
+            description?: string | null;
+          }) => (
+            <div key={pet.id} className={styles.petListItem}>
+              {displayFields.map((field) => {
+                let value: string | null = null;
+                switch (field) {
+                  case "name":
+                    value = pet.name;
+                    break;
+                  case "species":
+                    value = pet.species;
+                    break;
+                  case "breed":
+                    value = pet.breed || null;
+                    break;
+                  case "age":
+                    value = pet.age ? `${pet.age} years` : null;
+                    break;
+                  case "price":
+                    value = formatPrice(pet.price);
+                    break;
+                  case "status":
+                    value = pet.status;
+                    break;
+                  case "description":
+                    value = pet.description || null;
+                    break;
+                }
+                if (!value) return null;
+                return (
+                  <span key={field} className={styles.petListItemField} data-field={field}>
+                    {value}
+                  </span>
+                );
+              })}
+            </div>
+          ),
+        )}
+      </div>
+    );
+  }
+
+  // Cards layout - use PetCard but only show specified fields
+  return (
+    <div className={styles.petList}>
+      {pets.map(
+        (pet: {
+          id: string;
+          name: string;
+          species: string;
+          breed?: string | null;
+          age?: number | null;
+          price: number;
+          status: string;
+          description?: string | null;
+        }) => (
+          <PetCard
+            key={pet.id}
+            element={{
+              key: pet.id,
+              type: "PetCard",
+              props: {
+                ...pet,
+                // Only include fields that are in displayFields
+                breed: displayFields.includes("breed") ? pet.breed : undefined,
+                age: displayFields.includes("age") ? pet.age : undefined,
+                description: displayFields.includes("description") ? pet.description : undefined,
+                // Always need these for PetCard to work
+                name: pet.name,
+                species: displayFields.includes("species") ? pet.species : "",
+                price: displayFields.includes("price") ? pet.price : 0,
+                status: displayFields.includes("status") ? pet.status : "",
+              },
+              children: [],
+            }}
+          />
+        ),
+      )}
     </div>
   );
 }
@@ -584,4 +697,7 @@ export const toolRegistry = {
   Divider,
   Timer,
   Calculation,
+  DataList,
+  PetCard,
+  PetList,
 };

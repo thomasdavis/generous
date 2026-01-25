@@ -31,6 +31,12 @@ interface AppStateContextValue {
   components: StoredComponent[];
   addComponent: (component: Omit<StoredComponent, "id" | "createdAt">) => Promise<StoredComponent>;
   removeComponent: (id: string) => Promise<void>;
+  mergeComponents: (
+    idA: string,
+    idB: string,
+    mergedComponent: Omit<StoredComponent, "id" | "createdAt">,
+    position: { x: number; y: number },
+  ) => Promise<StoredComponent>;
 
   // Grid layout
   gridLayout: GridLayoutItem[];
@@ -107,13 +113,40 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       await saveComponent(fullComponent);
       setComponents((prev) => [...prev, fullComponent]);
 
-      // Add to grid layout - find a spot
+      // Calculate the next available position
+      // Find the bottom of all existing items
+      const cols = 12;
+      const itemWidth = 4;
+      const itemHeight = 3;
+
+      // Create a height map for each column
+      const colHeights = new Array(cols).fill(0);
+      for (const item of gridLayout) {
+        const itemBottom = item.y + item.h;
+        for (let col = item.x; col < item.x + item.w && col < cols; col++) {
+          colHeights[col] = Math.max(colHeights[col], itemBottom);
+        }
+      }
+
+      // Find the best position (lowest y where itemWidth columns are available)
+      let bestX = 0;
+      let bestY = Math.max(...colHeights);
+
+      // Try to find a spot that fits
+      for (let x = 0; x <= cols - itemWidth; x++) {
+        const maxHeightInSpan = Math.max(...colHeights.slice(x, x + itemWidth));
+        if (maxHeightInSpan < bestY) {
+          bestY = maxHeightInSpan;
+          bestX = x;
+        }
+      }
+
       const newLayoutItem: GridLayoutItem = {
         i: fullComponent.id,
-        x: (gridLayout.length * 4) % 12,
-        y: Infinity, // react-grid-layout will find the right y
-        w: 4,
-        h: 3,
+        x: bestX,
+        y: bestY,
+        w: itemWidth,
+        h: itemHeight,
       };
       const newLayout = [...gridLayout, newLayoutItem];
       await saveGridLayout(newLayout);
@@ -132,6 +165,46 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       const newLayout = gridLayout.filter((item) => item.i !== id);
       await saveGridLayout(newLayout);
       setGridLayout(newLayout);
+    },
+    [gridLayout],
+  );
+
+  const mergeComponents = useCallback(
+    async (
+      idA: string,
+      idB: string,
+      mergedComponent: Omit<StoredComponent, "id" | "createdAt">,
+      position: { x: number; y: number },
+    ): Promise<StoredComponent> => {
+      // Create the new merged component
+      const fullComponent: StoredComponent = {
+        ...mergedComponent,
+        id: crypto.randomUUID(),
+        createdAt: Date.now(),
+      };
+      await saveComponent(fullComponent);
+
+      // Remove the two old components
+      await deleteComponent(idA);
+      await deleteComponent(idB);
+
+      // Update components state
+      setComponents((prev) => [...prev.filter((c) => c.id !== idA && c.id !== idB), fullComponent]);
+
+      // Update grid layout - remove old items, add new one at the specified position
+      const newLayout = gridLayout
+        .filter((item) => item.i !== idA && item.i !== idB)
+        .concat({
+          i: fullComponent.id,
+          x: position.x,
+          y: position.y,
+          w: 4,
+          h: 4, // Slightly larger for merged content
+        });
+      await saveGridLayout(newLayout);
+      setGridLayout(newLayout);
+
+      return fullComponent;
     },
     [gridLayout],
   );
@@ -167,6 +240,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         components,
         addComponent,
         removeComponent,
+        mergeComponents,
         gridLayout,
         updateGridLayout,
         exportState: exportStateCallback,

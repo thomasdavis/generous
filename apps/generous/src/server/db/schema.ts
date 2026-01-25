@@ -1,4 +1,29 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+// ============================================
+// Pets table (example API data)
+// ============================================
+
+export const pet = pgTable("pet", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  species: text("species").notNull(), // dog, cat, bird, fish, etc.
+  breed: text("breed"),
+  age: integer("age"), // in years
+  price: integer("price").notNull(), // in cents
+  status: text("status").notNull().default("available"), // available, adopted, pending
+  description: text("description"),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Pet = typeof pet.$inferSelect;
+export type NewPet = typeof pet.$inferInsert;
+
+// ============================================
+// Auth tables
+// ============================================
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),

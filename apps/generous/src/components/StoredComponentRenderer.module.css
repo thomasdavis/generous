@@ -1,0 +1,100 @@
+/**
+ * StoredComponentRenderer - CSS Module
+ * Uses design tokens from @generous/ui
+ */
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-primary);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--surface-secondary);
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  cursor: grab;
+  flex: 1;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.headerBtn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-default);
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  padding: var(--space-0-5) var(--space-1-5);
+  transition:
+    color var(--duration-150) var(--ease-out),
+    border-color var(--duration-150) var(--ease-out);
+}
+
+.headerBtn:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: var(--text-lg);
+  cursor: pointer;
+  padding: 0 var(--space-1);
+  line-height: 1;
+  transition: color var(--duration-150) var(--ease-out);
+}
+
+.closeBtn:hover {
+  color: var(--text-secondary);
+}
+
+.content {
+  flex: 1;
+  padding: var(--space-3);
+  overflow: auto;
+}
+
+.jsonView {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-2);
+}
+
+.jsonPre {
+  margin: 0;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.error {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--state-error-text);
+  font-size: var(--text-sm);
+}

@@ -1,6 +1,12 @@
 "use client";
 
-import { ActionProvider, DataProvider, Renderer, VisibilityProvider } from "@json-render/react";
+import {
+  ActionProvider,
+  DataProvider,
+  Renderer,
+  useData,
+  VisibilityProvider,
+} from "@json-render/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./Chat.module.css";
 import { toolRegistry } from "./tool-registry";
@@ -231,66 +237,56 @@ export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererPro
   );
 }
 
-function InteractiveTreeRenderer({ tree, isLoading }: { tree: UITree; isLoading: boolean }) {
-  const [data, setData] = useState<Record<string, unknown>>(() => tree.data || {});
+// Inner component that has access to DataProvider's context
+function InteractiveTreeRendererInner({ tree, isLoading }: { tree: UITree; isLoading: boolean }) {
+  const { get, set } = useData();
 
+  // Action handlers that use DataProvider's get/set functions directly
   const handlers = useMemo(
     () => ({
       set: (params: { path?: string; value?: unknown }) => {
         if (params.path) {
-          setData((prev) => {
-            const key = params.path?.replace(/^\//, "") || "";
-            return key ? { ...prev, [key]: params.value } : prev;
-          });
+          set(params.path, params.value);
         }
       },
       toggleColor: (params: { path?: string }) => {
         if (params.path) {
-          setData((prev) => {
-            const key = params.path?.replace(/^\//, "") || "";
-            const currentColor = (prev[key] as string) || "blue";
-            const currentIndex = colorCycle.indexOf(currentColor);
-            const nextIndex = (currentIndex + 1) % colorCycle.length;
-            return { ...prev, [key]: colorCycle[nextIndex] };
-          });
+          const currentColor = (get(params.path) as string) || "blue";
+          const currentIndex = colorCycle.indexOf(currentColor);
+          const nextIndex = (currentIndex + 1) % colorCycle.length;
+          set(params.path, colorCycle[nextIndex]);
         }
       },
       increment: (params: { path?: string; by?: number }) => {
         if (params.path) {
-          setData((prev) => {
-            const key = params.path?.replace(/^\//, "") || "";
-            const current = (prev[key] as number) || 0;
-            return { ...prev, [key]: current + (params.by || 1) };
-          });
+          const current = (get(params.path) as number) || 0;
+          set(params.path, current + (params.by || 1));
         }
       },
       toggle: (params: { path?: string }) => {
         if (params.path) {
-          setData((prev) => {
-            const key = params.path?.replace(/^\//, "") || "";
-            return { ...prev, [key]: !prev[key] };
-          });
+          const current = get(params.path);
+          set(params.path, !current);
         }
       },
     }),
-    [],
+    [get, set],
   );
 
-  const handleDataChange = useCallback((path: string, value: unknown) => {
-    const key = path.replace(/^\//, "");
-    if (key) {
-      setData((prev) => ({ ...prev, [key]: value }));
-    }
-  }, []);
-
   return (
-    <DataProvider initialData={data} onDataChange={handleDataChange}>
-      <VisibilityProvider>
-        <ActionProvider handlers={handlers}>
-          {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
-          <Renderer tree={tree as any} registry={toolRegistry} loading={isLoading} />
-        </ActionProvider>
-      </VisibilityProvider>
+    <VisibilityProvider>
+      <ActionProvider handlers={handlers}>
+        {/* biome-ignore lint/suspicious/noExplicitAny: json-render types are incomplete */}
+        <Renderer tree={tree as any} registry={toolRegistry} loading={isLoading} />
+      </ActionProvider>
+    </VisibilityProvider>
+  );
+}
+
+function InteractiveTreeRenderer({ tree, isLoading }: { tree: UITree; isLoading: boolean }) {
+  return (
+    <DataProvider initialData={tree.data || {}}>
+      <InteractiveTreeRendererInner tree={tree} isLoading={isLoading} />
     </DataProvider>
   );
 }

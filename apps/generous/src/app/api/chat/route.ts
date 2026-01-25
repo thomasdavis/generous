@@ -161,6 +161,60 @@ const timerTool = tool({
   },
 });
 
+const createPetTools = (baseUrl: string) => ({
+  getPets: tool({
+    description: "Get a list of pets from the petshop database. Can filter by status or species.",
+    inputSchema: z.object({
+      status: z.enum(["available", "pending", "adopted"]).optional().describe("Filter by status"),
+      species: z
+        .enum(["dog", "cat", "bird", "fish", "rabbit"])
+        .optional()
+        .describe("Filter by species"),
+    }),
+    execute: async ({ status, species }) => {
+      let url = `${baseUrl}/api/pets`;
+      const params = new URLSearchParams();
+      if (status) params.set("status", status);
+      if (species) params.set("species", species);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      return {
+        pets: data.pets,
+        total: data.total,
+        filters: { status, species },
+      };
+    },
+  }),
+  addPet: tool({
+    description: "Add a new pet to the petshop database",
+    inputSchema: z.object({
+      name: z.string().describe("Name of the pet"),
+      species: z.enum(["dog", "cat", "bird", "fish", "rabbit"]).describe("Species of the pet"),
+      breed: z.string().optional().describe("Breed of the pet"),
+      age: z.number().optional().describe("Age in years"),
+      price: z.number().describe("Price in cents (e.g., 50000 for $500.00)"),
+      description: z.string().optional().describe("Description of the pet"),
+    }),
+    execute: async ({ name, species, breed, age, price, description }) => {
+      const response = await fetch(`${baseUrl}/api/pets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, species, breed, age, price, description }),
+      });
+
+      const pet = await response.json();
+      return {
+        success: true,
+        pet,
+        message: `Added ${name} the ${species} to the petshop!`,
+      };
+    },
+  }),
+});
+
 // Helper to parse JSONL into a tree
 function parseJSONLToTree(jsonl: string): {
   root: string;
@@ -252,7 +306,7 @@ Generate a visually appealing component using the available components. Use real
   },
 });
 
-const tools = {
+const baseTools = {
   weather: weatherTool,
   calculator: calculatorTool,
   stock: stockTool,
@@ -269,6 +323,15 @@ export async function POST(req: Request) {
     return new Response("No messages provided", { status: 400 });
   }
 
+  // Get base URL from request headers
+  const host = req.headers.get("host") || "localhost:3000";
+  const protocol = req.headers.get("x-forwarded-proto") || "http";
+  const baseUrl = `${protocol}://${host}`;
+
+  // Create tools with the correct base URL
+  const petTools = createPetTools(baseUrl);
+  const tools = { ...baseTools, ...petTools };
+
   const modelMessages = await convertToModelMessages(messages, { tools });
 
   const result = streamText({
@@ -280,6 +343,18 @@ export async function POST(req: Request) {
 - search: Search the web for information
 - timer: Set countdown timers
 - createComponent: Create persistent UI widgets that stay on the user's dashboard
+- getPets: Get a list of pets from the petshop database (can filter by status or species)
+- addPet: Add a new pet to the petshop database
+
+PETSHOP API:
+The petshop has a database of pets you can query and modify. Use getPets to list pets and addPet to add new ones.
+- Species: dog, cat, bird, fish, rabbit
+- Status: available, pending, adopted
+- Prices are in cents (e.g., 50000 = $500.00)
+
+When creating a component that displays pets, use the PetList component which fetches data dynamically from the API. This way, if new pets are added, they will automatically appear in the component without needing to recreate it.
+
+Example: If the user says "create a component showing available dogs", use createComponent with a description that specifies using PetList with status="available" and species="dog".
 
 IMPORTANT: When a user asks to "build", "create", "add", or "make" a widget, component, card, or dashboard element, use the createComponent tool. This creates a persistent widget that stays on their dashboard and can be moved around.
 
@@ -288,6 +363,8 @@ Examples of when to use createComponent:
 - "Create a stock tracker for AAPL"
 - "Add a todo list to my dashboard"
 - "Make a crypto price card for Bitcoin"
+- "Create a component showing all available pets"
+- "Build a pet list showing only cats"
 
 Be concise and friendly. Use tools when they would be helpful to answer the user's question.`,
     messages: modelMessages,
