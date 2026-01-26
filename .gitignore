@@ -41,3 +41,4 @@ pnpm-debug.log*
 *.tsbuildinfo
 .vercel
 json-render/
+.env*.local
