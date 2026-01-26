@@ -14,12 +14,111 @@ export const pet = pgTable("pet", {
   status: text("status").notNull().default("available"), // available, adopted, pending
   description: text("description"),
   imageUrl: text("image_url"),
+  categoryId: text("category_id"),
+  tags: text("tags"), // JSON array of tags
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export type Pet = typeof pet.$inferSelect;
 export type NewPet = typeof pet.$inferInsert;
+
+// ============================================
+// Categories table
+// ============================================
+
+export const category = pgTable("category", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export type Category = typeof category.$inferSelect;
+export type NewCategory = typeof category.$inferInsert;
+
+// ============================================
+// Customers table
+// ============================================
+
+export const customer = pgTable("customer", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => user.id), // optional link to auth user
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  city: text("city"),
+  state: text("state"),
+  zipCode: text("zip_code"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Customer = typeof customer.$inferSelect;
+export type NewCustomer = typeof customer.$inferInsert;
+
+// ============================================
+// Orders table
+// ============================================
+
+export const order = pgTable("order", {
+  id: text("id").primaryKey(),
+  customerId: text("customer_id")
+    .notNull()
+    .references(() => customer.id),
+  petId: text("pet_id")
+    .notNull()
+    .references(() => pet.id),
+  status: text("status").notNull().default("placed"), // placed, approved, delivered, cancelled
+  quantity: integer("quantity").notNull().default(1),
+  totalPrice: integer("total_price").notNull(), // in cents
+  shipDate: timestamp("ship_date"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Order = typeof order.$inferSelect;
+export type NewOrder = typeof order.$inferInsert;
+
+// ============================================
+// Inventory table
+// ============================================
+
+export const inventory = pgTable("inventory", {
+  id: text("id").primaryKey(),
+  itemName: text("item_name").notNull(),
+  itemType: text("item_type").notNull(), // food, toy, accessory, medicine, etc.
+  species: text("species"), // which species this is for (null = all)
+  quantity: integer("quantity").notNull().default(0),
+  unitPrice: integer("unit_price").notNull(), // in cents
+  reorderLevel: integer("reorder_level").default(10),
+  supplier: text("supplier"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type Inventory = typeof inventory.$inferSelect;
+export type NewInventory = typeof inventory.$inferInsert;
+
+// ============================================
+// Store Info table (singleton for store settings)
+// ============================================
+
+export const storeInfo = pgTable("store_info", {
+  id: text("id").primaryKey().default("store"),
+  name: text("name").notNull().default("Pet Paradise"),
+  address: text("address"),
+  phone: text("phone"),
+  email: text("email"),
+  openingHours: text("opening_hours"), // JSON
+  isOpen: boolean("is_open").notNull().default(true),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export type StoreInfo = typeof storeInfo.$inferSelect;
 
 // ============================================
 // Auth tables

@@ -30,6 +30,48 @@ const catalogComponents = {
       },
     ],
   },
+  formInputs: {
+    title: "Form Inputs",
+    description: "Components for user data entry, bound to data paths",
+    components: [
+      {
+        name: "Input",
+        description: "Text input field bound to a data path",
+        props: ["label", "placeholder", "valuePath", "type", "disabled"],
+        types: ["text", "email", "number", "password", "tel", "url"],
+        relatedStyleguide: "/styleguide/components/input",
+        relatedNote: "Extended with data binding via valuePath",
+      },
+      {
+        name: "Select",
+        description: "Dropdown select bound to a data path",
+        props: ["label", "valuePath", "options", "placeholder", "disabled"],
+        relatedStyleguide: "/styleguide/components/select",
+        relatedNote: "Extended with data binding via valuePath",
+      },
+      {
+        name: "Textarea",
+        description: "Multiline text input bound to a data path",
+        props: ["label", "placeholder", "valuePath", "rows", "disabled"],
+        relatedStyleguide: "/styleguide/components/input",
+        relatedNote: "Multiline variant with data binding",
+      },
+      {
+        name: "Checkbox",
+        description: "Checkbox bound to a boolean data path",
+        props: ["label", "checkedPath", "disabled"],
+        relatedStyleguide: "/styleguide/components/checkbox",
+        relatedNote: "Extended with data binding via checkedPath",
+      },
+      {
+        name: "RadioGroup",
+        description: "Radio button group bound to a data path",
+        props: ["label", "valuePath", "options", "disabled"],
+        relatedStyleguide: "/styleguide/components/radio",
+        relatedNote: "Extended with data binding via valuePath",
+      },
+    ],
+  },
   layout: {
     title: "Layout",
     description: "Structural components for organizing content",
@@ -225,6 +267,7 @@ interface CatalogComponent {
   levels?: string[];
   colors?: string[];
   layouts?: string[];
+  types?: string[];
   hasChildren?: boolean;
   relatedStyleguide: string | null;
   relatedNote?: string;
@@ -293,6 +336,13 @@ function ComponentCard({ component }: { component: CatalogComponent }) {
         <div className={styles.componentMeta}>
           <span className={styles.metaLabel}>Layouts:</span>
           <span className={styles.metaValue}>{component.layouts.join(" | ")}</span>
+        </div>
+      )}
+
+      {component.types && (
+        <div className={styles.componentMeta}>
+          <span className={styles.metaLabel}>Types:</span>
+          <span className={styles.metaValue}>{component.types.join(" | ")}</span>
         </div>
       )}
 

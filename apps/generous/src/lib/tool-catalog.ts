@@ -44,6 +44,70 @@ export const toolCatalog = createCatalog({
         "Card that reads its color from a data path and triggers an action on click. Use with toggleColor action.",
     },
 
+    // Form Inputs
+    Input: {
+      props: z.object({
+        label: z.string().nullable(),
+        placeholder: z.string().nullable(),
+        valuePath: z.string(),
+        type: z.enum(["text", "email", "number", "password", "tel", "url"]).nullable(),
+        disabled: z.boolean().nullable(),
+      }),
+      description:
+        "Text input field bound to a data path. Changes update the data at valuePath via set action.",
+    },
+
+    Select: {
+      props: z.object({
+        label: z.string().nullable(),
+        valuePath: z.string(),
+        options: z.array(
+          z.object({
+            value: z.string(),
+            label: z.string(),
+          }),
+        ),
+        placeholder: z.string().nullable(),
+        disabled: z.boolean().nullable(),
+      }),
+      description: "Dropdown select bound to a data path. Options array defines choices.",
+    },
+
+    Textarea: {
+      props: z.object({
+        label: z.string().nullable(),
+        placeholder: z.string().nullable(),
+        valuePath: z.string(),
+        rows: z.number().nullable(),
+        disabled: z.boolean().nullable(),
+      }),
+      description: "Multiline text input bound to a data path.",
+    },
+
+    Checkbox: {
+      props: z.object({
+        label: z.string(),
+        checkedPath: z.string(),
+        disabled: z.boolean().nullable(),
+      }),
+      description: "Checkbox bound to a boolean data path.",
+    },
+
+    RadioGroup: {
+      props: z.object({
+        label: z.string().nullable(),
+        valuePath: z.string(),
+        options: z.array(
+          z.object({
+            value: z.string(),
+            label: z.string(),
+          }),
+        ),
+        disabled: z.boolean().nullable(),
+      }),
+      description: "Radio button group bound to a data path. Only one option can be selected.",
+    },
+
     // Layout
     Card: {
       props: z.object({
@@ -243,6 +307,100 @@ export const toolCatalog = createCatalog({
       description:
         "Fetches and displays a list of pets from /api/pets. Use 'fields' to control which data is shown and 'layout' to choose display style.",
     },
+
+    // Customer components
+    CustomerList: {
+      props: z.object({
+        search: z.string().nullable(),
+        limit: z.number().nullable(),
+        refreshInterval: z.number().nullable(),
+        fields: z
+          .array(z.enum(["firstName", "lastName", "email", "phone", "city", "state"]))
+          .nullable(),
+        layout: z.enum(["cards", "list", "compact"]).nullable(),
+      }),
+      description: "Fetches and displays customers from /api/customers.",
+    },
+
+    CustomerCard: {
+      props: z.object({
+        firstName: z.string(),
+        lastName: z.string(),
+        email: z.string(),
+        phone: z.string().nullable(),
+        address: z.string().nullable(),
+        city: z.string().nullable(),
+        state: z.string().nullable(),
+        zipCode: z.string().nullable(),
+      }),
+      description: "Displays a single customer.",
+    },
+
+    // Order components
+    OrderList: {
+      props: z.object({
+        status: z.enum(["placed", "approved", "delivered", "cancelled"]).nullable(),
+        customerId: z.string().nullable(),
+        limit: z.number().nullable(),
+        refreshInterval: z.number().nullable(),
+        layout: z.enum(["cards", "list", "compact"]).nullable(),
+      }),
+      description: "Fetches and displays orders from /api/orders.",
+    },
+
+    OrderCard: {
+      props: z.object({
+        id: z.string(),
+        status: z.string(),
+        totalPrice: z.number(),
+        quantity: z.number(),
+        customerName: z.string().nullable(),
+        petName: z.string().nullable(),
+        createdAt: z.string().nullable(),
+      }),
+      description: "Displays a single order.",
+    },
+
+    // Inventory components
+    InventoryList: {
+      props: z.object({
+        itemType: z.enum(["food", "toy", "accessory", "medicine"]).nullable(),
+        species: z.enum(["dog", "cat", "bird", "fish", "rabbit"]).nullable(),
+        lowStockOnly: z.boolean().nullable(),
+        refreshInterval: z.number().nullable(),
+        layout: z.enum(["cards", "list", "compact"]).nullable(),
+      }),
+      description: "Fetches and displays inventory from /api/inventory.",
+    },
+
+    InventoryCard: {
+      props: z.object({
+        itemName: z.string(),
+        itemType: z.string(),
+        species: z.string().nullable(),
+        quantity: z.number(),
+        unitPrice: z.number(),
+        reorderLevel: z.number().nullable(),
+      }),
+      description: "Displays a single inventory item.",
+    },
+
+    // Store components
+    StoreStats: {
+      props: z.object({
+        refreshInterval: z.number().nullable(),
+      }),
+      description: "Fetches and displays store statistics from /api/store.",
+    },
+
+    // Category components
+    CategoryList: {
+      props: z.object({
+        refreshInterval: z.number().nullable(),
+        layout: z.enum(["cards", "list", "compact"]).nullable(),
+      }),
+      description: "Fetches and displays pet categories from /api/categories.",
+    },
   },
 });
 
@@ -255,6 +413,21 @@ InteractiveCard: Card that changes color on click. Props: title, colorPath, acti
   - colorPath: data path to read color from (e.g., "/card1Color")
   - action: { name: "toggleColor", params: { path: "/card1Color" } }
   - Colors: blue, green, red, purple, orange, yellow, pink, teal
+
+FORM INPUTS (for user data entry):
+Input: Text input bound to data. Props: label, placeholder, valuePath, type (text|email|number|password|tel|url), disabled.
+  - valuePath: data path to read/write value (e.g., "/formData/name")
+  - Changes automatically update data via set action
+Select: Dropdown select bound to data. Props: label, valuePath, options [{value, label}], placeholder, disabled.
+  - options: array of {value: "val", label: "Display"} objects
+Textarea: Multiline text input. Props: label, placeholder, valuePath, rows, disabled.
+Checkbox: Checkbox bound to boolean. Props: label, checkedPath, disabled.
+  - checkedPath: data path to boolean value (e.g., "/formData/agreed")
+RadioGroup: Radio button group. Props: label, valuePath, options [{value, label}], disabled.
+  - Only one option can be selected at a time
+
+FORM DATA: For forms, include initial data in your tree:
+  {"op":"set","path":"/data","value":{"formData":{"name":"","email":"","species":"dog","agreed":false}}}
 
 INITIAL DATA: For interactive components, include a "data" property in your tree:
   {"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"green"}}
@@ -283,6 +456,7 @@ Timer: Countdown with duration (seconds), label, endsAt (timestamp).
 Calculation: Math display with expression and result strings.
 
 DYNAMIC DATA COMPONENTS (for live data from APIs):
+
 PetList: Fetches and displays pets from /api/pets. Props:
   - status: (available|pending|adopted) - filter by status
   - species: (dog|cat|bird|fish|rabbit) - filter by species
@@ -290,15 +464,59 @@ PetList: Fetches and displays pets from /api/pets. Props:
   - layout: "cards" (full cards), "list" (compact rows), "compact" (minimal rows)
   - refreshInterval: (ms) - auto-refresh interval, default 5000ms
 
-  Examples:
-  - Show only name and price: {"type":"PetList","props":{"fields":["name","price"],"layout":"compact"},"children":[]}
-  - Show all available pets: {"type":"PetList","props":{"status":"available"},"children":[]}
-  - Show dogs with name, breed, price: {"type":"PetList","props":{"species":"dog","fields":["name","breed","price"],"layout":"list"},"children":[]}
+CustomerList: Fetches and displays customers from /api/customers. Props:
+  - search: search by email
+  - limit: max customers to show
+  - fields: ["firstName", "lastName", "email", "phone", "city", "state"]
+  - layout: "cards" | "list" | "compact"
+  - refreshInterval: (ms)
 
-PetCard: Displays a single pet. Props: name, species, breed, age, price (cents), status, description.
-DataList: Generic data fetcher. Props: endpoint (API URL), dataKey (key in response), emptyMessage, refreshInterval.
+OrderList: Fetches and displays orders from /api/orders. Props:
+  - status: (placed|approved|delivered|cancelled)
+  - customerId: filter by customer
+  - limit: max orders to show
+  - layout: "cards" | "list" | "compact"
+  - refreshInterval: (ms)
 
-IMPORTANT: When creating components that need LIVE data from APIs (like pets, products, etc.), use PetList or DataList.
+InventoryList: Fetches and displays inventory from /api/inventory. Props:
+  - itemType: (food|toy|accessory|medicine)
+  - species: (dog|cat|bird|fish|rabbit)
+  - lowStockOnly: boolean - show only low stock items
+  - layout: "cards" | "list" | "compact"
+  - refreshInterval: (ms)
+
+StoreStats: Fetches and displays store dashboard from /api/store. Props:
+  - refreshInterval: (ms)
+  Shows: total pets, available pets, pending orders, revenue, customers, low stock alerts.
+
+CategoryList: Fetches and displays pet categories from /api/categories. Props:
+  - layout: "cards" | "list" | "compact"
+  - refreshInterval: (ms)
+
+STATIC CARD COMPONENTS (for rendering individual items):
+PetCard: Single pet. Props: name, species, breed, age, price (cents), status, description.
+CustomerCard: Single customer. Props: firstName, lastName, email, phone, address, city, state, zipCode.
+OrderCard: Single order. Props: id, status, totalPrice, quantity, customerName, petName, createdAt.
+InventoryCard: Single inventory item. Props: itemName, itemType, species, quantity, unitPrice, reorderLevel.
+
+API REFERENCE (all endpoints support GET for reading, POST for creating):
+  /api/pets - List/create pets. Filters: status, species
+  /api/pets/:id - Get/update/delete single pet
+  /api/pets/search - Advanced search with q, minPrice, maxPrice, minAge, maxAge, breed
+  /api/pets/stats - Get pet statistics
+  /api/customers - List/create customers. Filters: search, limit, offset
+  /api/customers/:id - Get/update/delete single customer
+  /api/orders - List/create orders. Filters: status, customerId
+  /api/orders/:id - Get/update/delete single order
+  /api/inventory - List/create inventory. Filters: type, species, lowStock
+  /api/inventory/:id - Get/update/delete inventory item
+  /api/categories - List/create categories
+  /api/categories/:id - Get/update/delete category
+  /api/store - Get/update store info and stats
+  /api/seed - POST to seed sample data, GET to check counts
+  /api/user/me - Get current authenticated user
+
+IMPORTANT: When creating components that need LIVE data from APIs, use the List components (PetList, CustomerList, etc.).
 These components fetch data dynamically and auto-refresh, so new data will appear automatically.
 Use the 'fields' prop to customize which data is displayed - this is key for creating focused views.
 `;

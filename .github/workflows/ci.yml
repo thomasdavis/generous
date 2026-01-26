@@ -14,6 +14,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: generous_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,9 +50,43 @@ jobs:
         env:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+          DATABASE_URL: postgresql://test:test@localhost:5432/generous_test
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Lint
         run: pnpm lint
 
-      - name: Test
+      - name: Push Database Schema
+        run: pnpm --filter generous exec drizzle-kit push
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/generous_test
+
+      - name: Start Server
+        run: |
+          cd apps/generous
+          pnpm start &
+          sleep 10
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/generous_test
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          BETTER_AUTH_SECRET: test-secret-at-least-32-characters-long
+          BETTER_AUTH_URL: http://localhost:3000
+          PORT: 5100
+
+      - name: Wait for Server
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:5100/api/pets > /dev/null 2>&1; then
+              echo "Server is ready!"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
+
+      - name: Run Integration Tests
         run: pnpm test
+        env:
+          TEST_API_URL: http://localhost:5100
+          DATABASE_URL: postgresql://test:test@localhost:5432/generous_test
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

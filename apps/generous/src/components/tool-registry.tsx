@@ -82,6 +82,182 @@ export function InteractiveCard({ element, children, onAction }: ComponentRender
   );
 }
 
+// Input Component - text input bound to data
+export function Input({ element, onAction }: ComponentRenderProps) {
+  const { label, placeholder, valuePath, type, disabled } = element.props as {
+    label?: string | null;
+    placeholder?: string | null;
+    valuePath: string;
+    type?: string | null;
+    disabled?: boolean | null;
+  };
+
+  // Read current value from data context
+  const currentValue = useDataValue(valuePath);
+  const value =
+    typeof currentValue === "string" || typeof currentValue === "number" ? currentValue : "";
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = type === "number" ? Number(e.target.value) : e.target.value;
+    onAction?.({ name: "set", params: { path: valuePath, value: newValue } });
+  };
+
+  return (
+    <div className={styles.inputGroup}>
+      {label && <label className={styles.inputLabel}>{label}</label>}
+      <input
+        type={type || "text"}
+        value={value}
+        onChange={handleChange}
+        placeholder={placeholder || undefined}
+        disabled={disabled || false}
+        className={styles.input}
+      />
+    </div>
+  );
+}
+
+// Select Component - dropdown bound to data
+export function Select({ element, onAction }: ComponentRenderProps) {
+  const { label, valuePath, options, placeholder, disabled } = element.props as {
+    label?: string | null;
+    valuePath: string;
+    options: Array<{ value: string; label: string }>;
+    placeholder?: string | null;
+    disabled?: boolean | null;
+  };
+
+  const currentValue = useDataValue(valuePath);
+  const value = typeof currentValue === "string" ? currentValue : "";
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onAction?.({ name: "set", params: { path: valuePath, value: e.target.value } });
+  };
+
+  return (
+    <div className={styles.inputGroup}>
+      {label && <label className={styles.inputLabel}>{label}</label>}
+      <select
+        value={value}
+        onChange={handleChange}
+        disabled={disabled || false}
+        className={styles.select}
+      >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+// Textarea Component - multiline text bound to data
+export function Textarea({ element, onAction }: ComponentRenderProps) {
+  const { label, placeholder, valuePath, rows, disabled } = element.props as {
+    label?: string | null;
+    placeholder?: string | null;
+    valuePath: string;
+    rows?: number | null;
+    disabled?: boolean | null;
+  };
+
+  const currentValue = useDataValue(valuePath);
+  const value = typeof currentValue === "string" ? currentValue : "";
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onAction?.({ name: "set", params: { path: valuePath, value: e.target.value } });
+  };
+
+  return (
+    <div className={styles.inputGroup}>
+      {label && <label className={styles.inputLabel}>{label}</label>}
+      <textarea
+        value={value}
+        onChange={handleChange}
+        placeholder={placeholder || undefined}
+        rows={rows || 3}
+        disabled={disabled || false}
+        className={styles.textarea}
+      />
+    </div>
+  );
+}
+
+// Checkbox Component - bound to boolean data
+export function Checkbox({ element, onAction }: ComponentRenderProps) {
+  const { label, checkedPath, disabled } = element.props as {
+    label: string;
+    checkedPath: string;
+    disabled?: boolean | null;
+  };
+
+  const currentValue = useDataValue(checkedPath);
+  const checked = typeof currentValue === "boolean" ? currentValue : false;
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onAction?.({ name: "set", params: { path: checkedPath, value: e.target.checked } });
+  };
+
+  return (
+    <label className={styles.checkboxLabel}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={handleChange}
+        disabled={disabled || false}
+        className={styles.checkbox}
+      />
+      <span className={styles.checkboxText}>{label}</span>
+    </label>
+  );
+}
+
+// RadioGroup Component - radio buttons bound to data
+export function RadioGroup({ element, onAction }: ComponentRenderProps) {
+  const { label, valuePath, options, disabled } = element.props as {
+    label?: string | null;
+    valuePath: string;
+    options: Array<{ value: string; label: string }>;
+    disabled?: boolean | null;
+  };
+
+  const currentValue = useDataValue(valuePath);
+  const value = typeof currentValue === "string" ? currentValue : "";
+
+  const handleChange = (optionValue: string) => {
+    onAction?.({ name: "set", params: { path: valuePath, value: optionValue } });
+  };
+
+  return (
+    <fieldset className={styles.radioGroup}>
+      {label && <legend className={styles.radioGroupLabel}>{label}</legend>}
+      <div className={styles.radioOptions}>
+        {options.map((opt) => (
+          <label key={opt.value} className={styles.radioLabel}>
+            <input
+              type="radio"
+              name={valuePath}
+              value={opt.value}
+              checked={value === opt.value}
+              onChange={() => handleChange(opt.value)}
+              disabled={disabled || false}
+              className={styles.radio}
+            />
+            <span className={styles.radioText}>{opt.label}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
 // Card Component
 export function Card({ element, children }: ComponentRenderProps) {
   const { title, variant, padding } = element.props as {
@@ -676,10 +852,593 @@ export function PetList({ element }: ComponentRenderProps) {
   );
 }
 
+// CustomerCard Component - displays a single customer
+export function CustomerCard({ element }: ComponentRenderProps) {
+  const { firstName, lastName, email, phone, city, state } = element.props as {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone?: string | null;
+    address?: string | null;
+    city?: string | null;
+    state?: string | null;
+    zipCode?: string | null;
+  };
+
+  return (
+    <div className={styles.customerCard}>
+      <div className={styles.customerCardHeader}>
+        <span className={styles.customerCardAvatar}>
+          {firstName[0]}
+          {lastName[0]}
+        </span>
+        <div className={styles.customerCardInfo}>
+          <span className={styles.customerCardName}>
+            {firstName} {lastName}
+          </span>
+          <span className={styles.customerCardEmail}>{email}</span>
+        </div>
+      </div>
+      {(phone || city) && (
+        <div className={styles.customerCardFooter}>
+          {phone && <span className={styles.customerCardPhone}>{phone}</span>}
+          {city && state && (
+            <span className={styles.customerCardLocation}>
+              {city}, {state}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// CustomerList Component - fetches and displays customers
+export function CustomerList({ element }: ComponentRenderProps) {
+  const { search, limit, refreshInterval, fields, layout } = element.props as {
+    search?: string | null;
+    limit?: number | null;
+    refreshInterval?: number | null;
+    fields?: string[] | null;
+    layout?: "cards" | "list" | "compact" | null;
+  };
+
+  let url = "/api/customers";
+  const params = new URLSearchParams();
+  if (search) params.set("search", search);
+  if (limit) params.set("limit", String(limit));
+  if (params.toString()) url += `?${params.toString()}`;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    refreshInterval: refreshInterval || 5000,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading customers...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load customers</div>;
+  }
+
+  const customers = data?.customers || [];
+  const displayLayout = layout || "cards";
+  const displayFields = fields || ["firstName", "lastName", "email", "phone"];
+
+  if (customers.length === 0) {
+    return <div className={styles.dataListEmpty}>No customers found</div>;
+  }
+
+  if (displayLayout === "compact" || displayLayout === "list") {
+    return (
+      <div className={styles.petListCompact}>
+        {customers.map(
+          (c: {
+            id: string;
+            firstName: string;
+            lastName: string;
+            email: string;
+            phone?: string | null;
+            city?: string | null;
+            state?: string | null;
+          }) => (
+            <div key={c.id} className={styles.petListItem}>
+              {displayFields.includes("firstName") && (
+                <span className={styles.petListItemField} data-field="name">
+                  {c.firstName} {displayFields.includes("lastName") ? c.lastName : ""}
+                </span>
+              )}
+              {displayFields.includes("email") && (
+                <span className={styles.petListItemField} data-field="species">
+                  {c.email}
+                </span>
+              )}
+              {displayFields.includes("phone") && c.phone && (
+                <span className={styles.petListItemField} data-field="age">
+                  {c.phone}
+                </span>
+              )}
+              {displayFields.includes("city") && c.city && (
+                <span className={styles.petListItemField} data-field="status">
+                  {c.city}, {c.state}
+                </span>
+              )}
+            </div>
+          ),
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.petList}>
+      {customers.map(
+        (c: {
+          id: string;
+          firstName: string;
+          lastName: string;
+          email: string;
+          phone?: string | null;
+          city?: string | null;
+          state?: string | null;
+        }) => (
+          <CustomerCard
+            key={c.id}
+            element={{
+              key: c.id,
+              type: "CustomerCard",
+              props: c,
+              children: [],
+            }}
+          />
+        ),
+      )}
+    </div>
+  );
+}
+
+// OrderCard Component - displays a single order
+export function OrderCard({ element }: ComponentRenderProps) {
+  const { id, status, totalPrice, quantity, customerName, petName } = element.props as {
+    id: string;
+    status: string;
+    totalPrice: number;
+    quantity: number;
+    customerName?: string | null;
+    petName?: string | null;
+    createdAt?: string | null;
+  };
+
+  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  return (
+    <div className={styles.orderCard} data-status={status}>
+      <div className={styles.orderCardHeader}>
+        <span className={styles.orderCardId}>#{id.slice(-6)}</span>
+        <span className={styles.orderCardStatus} data-status={status}>
+          {status}
+        </span>
+      </div>
+      <div className={styles.orderCardBody}>
+        {petName && <span className={styles.orderCardPet}>{petName}</span>}
+        {customerName && <span className={styles.orderCardCustomer}>for {customerName}</span>}
+      </div>
+      <div className={styles.orderCardFooter}>
+        <span className={styles.orderCardQty}>Qty: {quantity}</span>
+        <span className={styles.orderCardPrice}>{formatPrice(totalPrice)}</span>
+      </div>
+    </div>
+  );
+}
+
+// OrderList Component - fetches and displays orders
+export function OrderList({ element }: ComponentRenderProps) {
+  const { status, customerId, limit, refreshInterval, layout } = element.props as {
+    status?: string | null;
+    customerId?: string | null;
+    limit?: number | null;
+    refreshInterval?: number | null;
+    layout?: "cards" | "list" | "compact" | null;
+  };
+
+  let url = "/api/orders";
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  if (customerId) params.set("customerId", customerId);
+  if (limit) params.set("limit", String(limit));
+  if (params.toString()) url += `?${params.toString()}`;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    refreshInterval: refreshInterval || 5000,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading orders...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load orders</div>;
+  }
+
+  const orders = data?.orders || [];
+  const displayLayout = layout || "cards";
+
+  if (orders.length === 0) {
+    return <div className={styles.dataListEmpty}>No orders found</div>;
+  }
+
+  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  if (displayLayout === "compact" || displayLayout === "list") {
+    return (
+      <div className={styles.petListCompact}>
+        {orders.map(
+          (o: {
+            id: string;
+            status: string;
+            totalPrice: number;
+            quantity: number;
+            createdAt: string;
+          }) => (
+            <div key={o.id} className={styles.petListItem}>
+              <span className={styles.petListItemField} data-field="name">
+                #{o.id.slice(-6)}
+              </span>
+              <span className={styles.petListItemField} data-field="status">
+                {o.status}
+              </span>
+              <span className={styles.petListItemField} data-field="price">
+                {formatPrice(o.totalPrice)}
+              </span>
+            </div>
+          ),
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.petList}>
+      {orders.map(
+        (o: {
+          id: string;
+          status: string;
+          totalPrice: number;
+          quantity: number;
+          createdAt: string;
+        }) => (
+          <OrderCard
+            key={o.id}
+            element={{
+              key: o.id,
+              type: "OrderCard",
+              props: {
+                ...o,
+                customerName: null,
+                petName: null,
+              },
+              children: [],
+            }}
+          />
+        ),
+      )}
+    </div>
+  );
+}
+
+// InventoryCard Component - displays a single inventory item
+export function InventoryCard({ element }: ComponentRenderProps) {
+  const { itemName, itemType, species, quantity, unitPrice, reorderLevel } = element.props as {
+    itemName: string;
+    itemType: string;
+    species?: string | null;
+    quantity: number;
+    unitPrice: number;
+    reorderLevel?: number | null;
+  };
+
+  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+  const isLowStock = quantity <= (reorderLevel || 10);
+
+  const typeEmoji: Record<string, string> = {
+    food: "🍖",
+    toy: "🎾",
+    accessory: "🎀",
+    medicine: "💊",
+  };
+
+  return (
+    <div className={styles.inventoryCard} data-low-stock={isLowStock}>
+      <div className={styles.inventoryCardHeader}>
+        <span className={styles.inventoryCardEmoji}>{typeEmoji[itemType] || "📦"}</span>
+        <div className={styles.inventoryCardInfo}>
+          <span className={styles.inventoryCardName}>{itemName}</span>
+          <span className={styles.inventoryCardType}>
+            {itemType}
+            {species && ` • ${species}`}
+          </span>
+        </div>
+      </div>
+      <div className={styles.inventoryCardFooter}>
+        <span className={styles.inventoryCardQty} data-low-stock={isLowStock}>
+          {quantity} in stock
+        </span>
+        <span className={styles.inventoryCardPrice}>{formatPrice(unitPrice)}</span>
+      </div>
+    </div>
+  );
+}
+
+// InventoryList Component - fetches and displays inventory
+export function InventoryList({ element }: ComponentRenderProps) {
+  const { itemType, species, lowStockOnly, refreshInterval, layout } = element.props as {
+    itemType?: string | null;
+    species?: string | null;
+    lowStockOnly?: boolean | null;
+    refreshInterval?: number | null;
+    layout?: "cards" | "list" | "compact" | null;
+  };
+
+  let url = "/api/inventory";
+  const params = new URLSearchParams();
+  if (itemType) params.set("type", itemType);
+  if (species) params.set("species", species);
+  if (lowStockOnly) params.set("lowStock", "true");
+  if (params.toString()) url += `?${params.toString()}`;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    refreshInterval: refreshInterval || 5000,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading inventory...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load inventory</div>;
+  }
+
+  const items = data?.items || [];
+  const displayLayout = layout || "cards";
+
+  if (items.length === 0) {
+    return <div className={styles.dataListEmpty}>No inventory items found</div>;
+  }
+
+  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  if (displayLayout === "compact" || displayLayout === "list") {
+    return (
+      <div className={styles.petListCompact}>
+        {items.map(
+          (item: {
+            id: string;
+            itemName: string;
+            itemType: string;
+            quantity: number;
+            unitPrice: number;
+            reorderLevel?: number | null;
+          }) => (
+            <div key={item.id} className={styles.petListItem}>
+              <span className={styles.petListItemField} data-field="name">
+                {item.itemName}
+              </span>
+              <span className={styles.petListItemField} data-field="species">
+                {item.itemType}
+              </span>
+              <span
+                className={styles.petListItemField}
+                data-field="status"
+                style={{
+                  color:
+                    item.quantity <= (item.reorderLevel || 10)
+                      ? "var(--state-error-text)"
+                      : undefined,
+                }}
+              >
+                {item.quantity} in stock
+              </span>
+              <span className={styles.petListItemField} data-field="price">
+                {formatPrice(item.unitPrice)}
+              </span>
+            </div>
+          ),
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.petList}>
+      {items.map(
+        (item: {
+          id: string;
+          itemName: string;
+          itemType: string;
+          species?: string | null;
+          quantity: number;
+          unitPrice: number;
+          reorderLevel?: number | null;
+        }) => (
+          <InventoryCard
+            key={item.id}
+            element={{
+              key: item.id,
+              type: "InventoryCard",
+              props: item,
+              children: [],
+            }}
+          />
+        ),
+      )}
+    </div>
+  );
+}
+
+// StoreStats Component - fetches and displays store statistics
+export function StoreStats({ element }: ComponentRenderProps) {
+  const { refreshInterval } = element.props as {
+    refreshInterval?: number | null;
+  };
+
+  const { data, error, isLoading } = useSWR("/api/store", fetcher, {
+    refreshInterval: refreshInterval || 10000,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading store stats...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load store stats</div>;
+  }
+
+  const stats = data?.stats;
+  const formatPrice = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  return (
+    <div className={styles.storeStats}>
+      <div className={styles.storeStatsHeader}>
+        <span className={styles.storeStatsName}>{data?.name || "Pet Store"}</span>
+        <span className={styles.storeStatsStatus} data-open={data?.isOpen}>
+          {data?.isOpen ? "Open" : "Closed"}
+        </span>
+      </div>
+      <div className={styles.storeStatsGrid}>
+        <div className={styles.storeStatItem}>
+          <span className={styles.storeStatValue}>{stats?.totalPets || 0}</span>
+          <span className={styles.storeStatLabel}>Total Pets</span>
+        </div>
+        <div className={styles.storeStatItem}>
+          <span className={styles.storeStatValue}>{stats?.availablePets || 0}</span>
+          <span className={styles.storeStatLabel}>Available</span>
+        </div>
+        <div className={styles.storeStatItem}>
+          <span className={styles.storeStatValue}>{stats?.pendingOrders || 0}</span>
+          <span className={styles.storeStatLabel}>Pending Orders</span>
+        </div>
+        <div className={styles.storeStatItem}>
+          <span className={styles.storeStatValue}>{formatPrice(stats?.totalRevenue || 0)}</span>
+          <span className={styles.storeStatLabel}>Revenue</span>
+        </div>
+        <div className={styles.storeStatItem}>
+          <span className={styles.storeStatValue}>{stats?.totalCustomers || 0}</span>
+          <span className={styles.storeStatLabel}>Customers</span>
+        </div>
+        <div className={styles.storeStatItem}>
+          <span
+            className={styles.storeStatValue}
+            style={{ color: stats?.lowStockItems > 0 ? "var(--state-warning-text)" : undefined }}
+          >
+            {stats?.lowStockItems || 0}
+          </span>
+          <span className={styles.storeStatLabel}>Low Stock</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// CategoryList Component - fetches and displays categories
+export function CategoryList({ element }: ComponentRenderProps) {
+  const { refreshInterval, layout } = element.props as {
+    refreshInterval?: number | null;
+    layout?: "cards" | "list" | "compact" | null;
+  };
+
+  const { data, error, isLoading } = useSWR("/api/categories", fetcher, {
+    refreshInterval: refreshInterval || 30000,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Loading categories...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className={styles.dataListError}>Failed to load categories</div>;
+  }
+
+  const categories = data?.categories || [];
+  const displayLayout = layout || "list";
+
+  if (categories.length === 0) {
+    return <div className={styles.dataListEmpty}>No categories found</div>;
+  }
+
+  const categoryEmoji: Record<string, string> = {
+    Dogs: "🐕",
+    Cats: "🐱",
+    Birds: "🐦",
+    Fish: "🐠",
+    "Small Animals": "🐰",
+  };
+
+  if (displayLayout === "compact") {
+    return (
+      <div className={styles.categoryListCompact}>
+        {categories.map((cat: { id: string; name: string }) => (
+          <span key={cat.id} className={styles.categoryBadge}>
+            {categoryEmoji[cat.name] || "🐾"} {cat.name}
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.categoryList}>
+      {categories.map((cat: { id: string; name: string; description?: string | null }) => (
+        <div key={cat.id} className={styles.categoryItem}>
+          <span className={styles.categoryEmoji}>{categoryEmoji[cat.name] || "🐾"}</span>
+          <div className={styles.categoryInfo}>
+            <span className={styles.categoryName}>{cat.name}</span>
+            {cat.description && <span className={styles.categoryDesc}>{cat.description}</span>}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // Export registry
 export const toolRegistry = {
   Button,
   InteractiveCard,
+  Input,
+  Select,
+  Textarea,
+  Checkbox,
+  RadioGroup,
   Card,
   Grid,
   Stack,
@@ -700,4 +1459,12 @@ export const toolRegistry = {
   DataList,
   PetCard,
   PetList,
+  CustomerCard,
+  CustomerList,
+  OrderCard,
+  OrderList,
+  InventoryCard,
+  InventoryList,
+  StoreStats,
+  CategoryList,
 };

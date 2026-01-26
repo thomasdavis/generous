@@ -9,6 +9,12 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
     exclude: ["tests/e2e/**"],
+    testTimeout: 120000, // 2 minutes for LLM tests
+    hookTimeout: 30000,
+    // Run API tests sequentially to avoid race conditions
+    sequence: {
+      shuffle: false,
+    },
   },
   resolve: {
     alias: {

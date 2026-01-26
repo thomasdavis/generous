@@ -1,11 +1,12 @@
 /**
  * Chat API Tests
- * Run with: pnpm vitest run src/app/api/chat/route.test.ts
+ * Run with: pnpm vitest run tests/api/chat.test.ts
  */
 
 import { describe, expect, it } from "vitest";
 
-const API_URL = "http://localhost:5000/api/chat";
+const BASE_URL = process.env.TEST_API_URL || "http://localhost:5100";
+const API_URL = `${BASE_URL}/api/chat`;
 
 describe("Chat API", () => {
   it("should return 400 for empty messages", async () => {
