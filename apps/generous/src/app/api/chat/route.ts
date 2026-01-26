@@ -161,41 +161,46 @@ const timerTool = tool({
   },
 });
 
-const createPetTools = (baseUrl: string) => ({
+const createApiTools = (baseUrl: string) => ({
+  // ===== PETS =====
   getPets: tool({
-    description: "Get a list of pets from the petshop database. Can filter by status or species.",
+    description: "Get a list of pets from the pet store. Can filter by status or species.",
     inputSchema: z.object({
       status: z.enum(["available", "pending", "adopted"]).optional().describe("Filter by status"),
       species: z
-        .enum(["dog", "cat", "bird", "fish", "rabbit"])
+        .string()
         .optional()
-        .describe("Filter by species"),
+        .describe("Filter by species (dog, cat, bird, fish, rabbit, etc.)"),
     }),
     execute: async ({ status, species }) => {
-      let url = `${baseUrl}/api/pets`;
       const params = new URLSearchParams();
       if (status) params.set("status", status);
       if (species) params.set("species", species);
-      if (params.toString()) url += `?${params.toString()}`;
-
+      const url = `${baseUrl}/api/pets${params.toString() ? `?${params}` : ""}`;
       const response = await fetch(url);
-      const data = await response.json();
-
-      return {
-        pets: data.pets,
-        total: data.total,
-        filters: { status, species },
-      };
+      return response.json();
     },
   }),
+
+  getPetById: tool({
+    description: "Get a specific pet by its ID",
+    inputSchema: z.object({
+      id: z.string().describe("The pet ID"),
+    }),
+    execute: async ({ id }) => {
+      const response = await fetch(`${baseUrl}/api/pets/${id}`);
+      return response.json();
+    },
+  }),
+
   addPet: tool({
-    description: "Add a new pet to the petshop database",
+    description: "Add a new pet to the store",
     inputSchema: z.object({
       name: z.string().describe("Name of the pet"),
-      species: z.enum(["dog", "cat", "bird", "fish", "rabbit"]).describe("Species of the pet"),
+      species: z.string().describe("Species (dog, cat, bird, fish, rabbit, etc.)"),
       breed: z.string().optional().describe("Breed of the pet"),
       age: z.number().optional().describe("Age in years"),
-      price: z.number().describe("Price in cents (e.g., 50000 for $500.00)"),
+      price: z.number().describe("Price in cents (e.g., 50000 = $500.00)"),
       description: z.string().optional().describe("Description of the pet"),
     }),
     execute: async ({ name, species, breed, age, price, description }) => {
@@ -204,13 +209,258 @@ const createPetTools = (baseUrl: string) => ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, species, breed, age, price, description }),
       });
+      return response.json();
+    },
+  }),
 
-      const pet = await response.json();
-      return {
-        success: true,
-        pet,
-        message: `Added ${name} the ${species} to the petshop!`,
-      };
+  updatePet: tool({
+    description: "Update a pet's information",
+    inputSchema: z.object({
+      id: z.string().describe("The pet ID"),
+      name: z.string().optional().describe("New name"),
+      status: z.enum(["available", "pending", "adopted"]).optional().describe("New status"),
+      price: z.number().optional().describe("New price in cents"),
+    }),
+    execute: async ({ id, ...updates }) => {
+      const response = await fetch(`${baseUrl}/api/pets/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      return response.json();
+    },
+  }),
+
+  searchPets: tool({
+    description: "Search pets by name or description",
+    inputSchema: z.object({
+      query: z.string().describe("Search query"),
+    }),
+    execute: async ({ query }) => {
+      const response = await fetch(`${baseUrl}/api/pets/search?q=${encodeURIComponent(query)}`);
+      return response.json();
+    },
+  }),
+
+  getPetStats: tool({
+    description:
+      "Get statistics about pets in the store (counts by status, species, average price)",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch(`${baseUrl}/api/pets/stats`);
+      return response.json();
+    },
+  }),
+
+  // ===== CUSTOMERS =====
+  getCustomers: tool({
+    description: "Get a list of customers with optional search and pagination",
+    inputSchema: z.object({
+      search: z.string().optional().describe("Search by email"),
+      limit: z.number().optional().describe("Results per page (default: 50)"),
+      offset: z.number().optional().describe("Pagination offset"),
+    }),
+    execute: async ({ search, limit, offset }) => {
+      const params = new URLSearchParams();
+      if (search) params.set("search", search);
+      if (limit) params.set("limit", String(limit));
+      if (offset) params.set("offset", String(offset));
+      const url = `${baseUrl}/api/customers${params.toString() ? `?${params}` : ""}`;
+      const response = await fetch(url);
+      return response.json();
+    },
+  }),
+
+  getCustomerById: tool({
+    description: "Get a specific customer by ID",
+    inputSchema: z.object({
+      id: z.string().describe("The customer ID"),
+    }),
+    execute: async ({ id }) => {
+      const response = await fetch(`${baseUrl}/api/customers/${id}`);
+      return response.json();
+    },
+  }),
+
+  addCustomer: tool({
+    description: "Add a new customer",
+    inputSchema: z.object({
+      firstName: z.string().describe("First name"),
+      lastName: z.string().describe("Last name"),
+      email: z.string().describe("Email address"),
+      phone: z.string().optional().describe("Phone number"),
+      address: z.string().optional().describe("Street address"),
+      city: z.string().optional().describe("City"),
+      state: z.string().optional().describe("State"),
+      zipCode: z.string().optional().describe("ZIP code"),
+    }),
+    execute: async (data) => {
+      const response = await fetch(`${baseUrl}/api/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+  }),
+
+  // ===== ORDERS =====
+  getOrders: tool({
+    description: "Get a list of orders with optional filtering",
+    inputSchema: z.object({
+      status: z
+        .enum(["placed", "approved", "delivered", "cancelled"])
+        .optional()
+        .describe("Filter by status"),
+      customerId: z.string().optional().describe("Filter by customer ID"),
+      limit: z.number().optional().describe("Results per page"),
+      offset: z.number().optional().describe("Pagination offset"),
+    }),
+    execute: async ({ status, customerId, limit, offset }) => {
+      const params = new URLSearchParams();
+      if (status) params.set("status", status);
+      if (customerId) params.set("customerId", customerId);
+      if (limit) params.set("limit", String(limit));
+      if (offset) params.set("offset", String(offset));
+      const url = `${baseUrl}/api/orders${params.toString() ? `?${params}` : ""}`;
+      const response = await fetch(url);
+      return response.json();
+    },
+  }),
+
+  getOrderById: tool({
+    description: "Get order details including customer and pet info",
+    inputSchema: z.object({
+      id: z.string().describe("The order ID"),
+    }),
+    execute: async ({ id }) => {
+      const response = await fetch(`${baseUrl}/api/orders/${id}`);
+      return response.json();
+    },
+  }),
+
+  createOrder: tool({
+    description: "Create a new order (adopting a pet). This marks the pet as pending.",
+    inputSchema: z.object({
+      customerId: z.string().describe("Customer ID"),
+      petId: z.string().describe("Pet ID"),
+      quantity: z.number().optional().describe("Quantity (default: 1)"),
+      notes: z.string().optional().describe("Order notes"),
+    }),
+    execute: async (data) => {
+      const response = await fetch(`${baseUrl}/api/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+  }),
+
+  updateOrderStatus: tool({
+    description: "Update an order's status",
+    inputSchema: z.object({
+      id: z.string().describe("Order ID"),
+      status: z.enum(["placed", "approved", "delivered", "cancelled"]).describe("New status"),
+    }),
+    execute: async ({ id, status }) => {
+      const response = await fetch(`${baseUrl}/api/orders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      return response.json();
+    },
+  }),
+
+  // ===== INVENTORY =====
+  getInventory: tool({
+    description: "Get inventory items (food, supplies, medicine, accessories)",
+    inputSchema: z.object({
+      type: z
+        .string()
+        .optional()
+        .describe("Filter by type (food, supplies, medicine, accessories)"),
+      species: z.string().optional().describe("Filter by target species"),
+      lowStock: z.boolean().optional().describe("Show only low stock items"),
+    }),
+    execute: async ({ type, species, lowStock }) => {
+      const params = new URLSearchParams();
+      if (type) params.set("type", type);
+      if (species) params.set("species", species);
+      if (lowStock) params.set("lowStock", "true");
+      const url = `${baseUrl}/api/inventory${params.toString() ? `?${params}` : ""}`;
+      const response = await fetch(url);
+      return response.json();
+    },
+  }),
+
+  addInventoryItem: tool({
+    description: "Add a new inventory item",
+    inputSchema: z.object({
+      itemName: z.string().describe("Item name"),
+      itemType: z.enum(["food", "supplies", "medicine", "accessories"]).describe("Item type"),
+      unitPrice: z.number().describe("Price per unit in cents"),
+      species: z.string().optional().describe("Target species"),
+      quantity: z.number().optional().describe("Initial quantity"),
+      reorderLevel: z.number().optional().describe("Low stock threshold"),
+      supplier: z.string().optional().describe("Supplier name"),
+    }),
+    execute: async (data) => {
+      const response = await fetch(`${baseUrl}/api/inventory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      return response.json();
+    },
+  }),
+
+  updateInventory: tool({
+    description: "Update inventory item (e.g., adjust quantity)",
+    inputSchema: z.object({
+      id: z.string().describe("Inventory item ID"),
+      quantity: z.number().optional().describe("New quantity"),
+      unitPrice: z.number().optional().describe("New price"),
+    }),
+    execute: async ({ id, ...updates }) => {
+      const response = await fetch(`${baseUrl}/api/inventory/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      return response.json();
+    },
+  }),
+
+  // ===== STORE =====
+  getStoreInfo: tool({
+    description:
+      "Get store information and dashboard statistics (total pets, orders, revenue, etc.)",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch(`${baseUrl}/api/store`);
+      return response.json();
+    },
+  }),
+
+  // ===== CATEGORIES =====
+  getCategories: tool({
+    description: "Get all pet categories",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch(`${baseUrl}/api/categories`);
+      return response.json();
+    },
+  }),
+
+  // ===== SEED =====
+  seedDatabase: tool({
+    description: "Seed the database with sample data (pets, customers, orders, inventory)",
+    inputSchema: z.object({}),
+    execute: async () => {
+      const response = await fetch(`${baseUrl}/api/seed`, { method: "POST" });
+      return response.json();
     },
   }),
 });
@@ -329,44 +579,79 @@ export async function POST(req: Request) {
   const baseUrl = `${protocol}://${host}`;
 
   // Create tools with the correct base URL
-  const petTools = createPetTools(baseUrl);
-  const tools = { ...baseTools, ...petTools };
+  const apiTools = createApiTools(baseUrl);
+  const tools = { ...baseTools, ...apiTools };
 
   const modelMessages = await convertToModelMessages(messages, { tools });
 
   const result = streamText({
     model: openai("gpt-4.1-mini"),
-    system: `You are a helpful assistant with access to several tools:
+    system: `You are a helpful assistant for a Pet Store management application. You have access to a comprehensive REST API and various utility tools.
+
+## UTILITY TOOLS
 - weather: Get current weather and forecast for any location
 - calculator: Perform math calculations
-- stock: Get stock prices and market data for ticker symbols
+- stock: Get stock prices and market data
 - search: Search the web for information
 - timer: Set countdown timers
-- createComponent: Create persistent UI widgets that stay on the user's dashboard
-- getPets: Get a list of pets from the petshop database (can filter by status or species)
-- addPet: Add a new pet to the petshop database
+- createComponent: Create persistent UI widgets for the dashboard
 
-PETSHOP API:
-The petshop has a database of pets you can query and modify. Use getPets to list pets and addPet to add new ones.
-- Species: dog, cat, bird, fish, rabbit
-- Status: available, pending, adopted
-- Prices are in cents (e.g., 50000 = $500.00)
+## PET STORE API
+You have full access to the Pet Store API with the following capabilities:
 
-When creating a component that displays pets, use the PetList component which fetches data dynamically from the API. This way, if new pets are added, they will automatically appear in the component without needing to recreate it.
+### PETS (/api/pets)
+- getPets: List all pets. Filter by status (available/pending/adopted) or species
+- getPetById: Get a specific pet by ID
+- addPet: Add a new pet (name, species, breed, age, price in cents, description)
+- updatePet: Update pet info (name, status, price)
+- searchPets: Search pets by name or description
+- getPetStats: Get store statistics (counts by status/species, average price)
 
-Example: If the user says "create a component showing available dogs", use createComponent with a description that specifies using PetList with status="available" and species="dog".
+### CUSTOMERS (/api/customers)
+- getCustomers: List customers with search and pagination
+- getCustomerById: Get customer by ID
+- addCustomer: Add new customer (firstName, lastName, email, phone, address, city, state, zipCode)
 
-IMPORTANT: When a user asks to "build", "create", "add", or "make" a widget, component, card, or dashboard element, use the createComponent tool. This creates a persistent widget that stays on their dashboard and can be moved around.
+### ORDERS (/api/orders)
+- getOrders: List orders. Filter by status (placed/approved/delivered/cancelled) or customerId
+- getOrderById: Get order details with customer and pet info
+- createOrder: Create order (customerId, petId) - marks pet as pending
+- updateOrderStatus: Update order status
 
-Examples of when to use createComponent:
-- "Build me a weather widget for Tokyo"
-- "Create a stock tracker for AAPL"
-- "Add a todo list to my dashboard"
-- "Make a crypto price card for Bitcoin"
-- "Create a component showing all available pets"
-- "Build a pet list showing only cats"
+### INVENTORY (/api/inventory)
+- getInventory: List inventory. Filter by type (food/supplies/medicine/accessories), species, or lowStock
+- addInventoryItem: Add item (itemName, itemType, unitPrice, species, quantity, reorderLevel, supplier)
+- updateInventory: Update item quantity or price
 
-Be concise and friendly. Use tools when they would be helpful to answer the user's question.`,
+### STORE (/api/store)
+- getStoreInfo: Get store info and dashboard stats (total pets, orders, revenue, low stock alerts)
+
+### CATEGORIES (/api/categories)
+- getCategories: Get all pet categories
+
+### UTILITIES
+- seedDatabase: Seed database with sample data
+
+## PRICES
+All prices are in cents (e.g., 50000 = $500.00)
+
+## CREATING DASHBOARD WIDGETS
+When users ask to "build", "create", or "make" a widget/component/card, use the createComponent tool.
+This creates a persistent widget on their dashboard that can be moved and resized.
+
+For pet-related widgets, use the PetList component which fetches data dynamically from the API.
+Example: "Create a widget showing available dogs" → use createComponent with PetList filtered by status and species.
+
+## EXAMPLES
+- "Show me all available pets" → use getPets with status="available"
+- "Add a golden retriever named Max" → use addPet
+- "Create a pet dashboard widget" → use createComponent
+- "How many pets are adopted?" → use getPetStats
+- "Show orders for customer X" → use getOrders with customerId
+- "What's running low in inventory?" → use getInventory with lowStock=true
+- "Get store statistics" → use getStoreInfo
+
+Be concise and helpful. Use the appropriate API tools to fulfill requests about pets, customers, orders, and inventory.`,
     messages: modelMessages,
     tools,
   });
