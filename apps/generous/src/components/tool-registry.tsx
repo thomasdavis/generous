@@ -611,6 +611,40 @@ export function Calculation({ element }: ComponentRenderProps) {
   );
 }
 
+// StatusMessage Component - shows loading/error/success states from API calls
+export function StatusMessage() {
+  const loading = useDataValue("/apiLoading");
+  const error = useDataValue("/apiError");
+  const success = useDataValue("/apiSuccess");
+
+  if (loading) {
+    return (
+      <div className={styles.statusMessage} data-type="loading">
+        <div className={styles.dataListSpinner} />
+        <span>Processing...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.statusMessage} data-type="error">
+        <span>{String(error)}</span>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className={styles.statusMessage} data-type="success">
+        <span>{String(success)}</span>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 // DataList Component - fetches data from an API and renders items
 export function DataList({ element, children }: ComponentRenderProps) {
   const { endpoint, dataKey, emptyMessage, refreshInterval } = element.props as {
@@ -1456,6 +1490,7 @@ export const toolRegistry = {
   Divider,
   Timer,
   Calculation,
+  StatusMessage,
   DataList,
   PetCard,
   PetList,

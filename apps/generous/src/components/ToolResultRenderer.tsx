@@ -8,6 +8,7 @@ import {
   VisibilityProvider,
 } from "@json-render/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { mutate } from "swr";
 import styles from "./Chat.module.css";
 import { toolRegistry } from "./tool-registry";
 
@@ -268,6 +269,84 @@ function InteractiveTreeRendererInner({ tree, isLoading }: { tree: UITree; isLoa
           const current = get(params.path);
           set(params.path, !current);
         }
+      },
+      // API call action - makes HTTP requests to the API
+      apiCall: (params: Record<string, unknown>) => {
+        const {
+          endpoint,
+          method = "POST",
+          bodyPaths,
+          body,
+          revalidate,
+          successMessage,
+          resetPaths,
+        } = params as {
+          endpoint: string;
+          method?: string;
+          bodyPaths?: Record<string, string>;
+          body?: Record<string, unknown>;
+          revalidate?: string[];
+          successMessage?: string;
+          resetPaths?: string[];
+        };
+
+        console.log("[Handler] apiCall called with:", params);
+
+        // Build request body from data paths or use provided body
+        const requestBody: Record<string, unknown> = body || {};
+        if (bodyPaths) {
+          for (const [key, path] of Object.entries(bodyPaths)) {
+            const value = get(path);
+            if (value !== undefined && value !== null && value !== "") {
+              requestBody[key] = value;
+            }
+          }
+        }
+
+        console.log("[Handler] apiCall making request:", { endpoint, method, requestBody });
+
+        // Set loading state
+        set("/apiLoading", true);
+        set("/apiError", null);
+
+        fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: method !== "GET" ? JSON.stringify(requestBody) : undefined,
+        })
+          .then((response) => response.json().then((data) => ({ response, data })))
+          .then(({ response, data }) => {
+            if (!response.ok) {
+              throw new Error(data.error || `Request failed: ${response.status}`);
+            }
+
+            console.log("[Handler] apiCall success:", data);
+
+            set("/apiSuccess", successMessage || "Success!");
+            set("/apiLoading", false);
+
+            if (resetPaths) {
+              for (const path of resetPaths) {
+                set(path, "");
+              }
+            }
+
+            setTimeout(() => set("/apiSuccess", null), 3000);
+
+            if (revalidate) {
+              for (const path of revalidate) {
+                mutate((key) => typeof key === "string" && key.startsWith(path), undefined, {
+                  revalidate: true,
+                });
+              }
+            }
+          })
+          .catch((error) => {
+            console.error("[Handler] apiCall error:", error);
+            set("/apiLoading", false);
+            set("/apiError", error instanceof Error ? error.message : "Request failed");
+            setTimeout(() => set("/apiError", null), 5000);
+          });
       },
     }),
     [get, set],

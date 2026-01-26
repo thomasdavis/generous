@@ -15,26 +15,67 @@ Output JSONL patches in this format:
 {"op":"set","path":"/root","value":"<root-element-key>"}
 {"op":"add","path":"/elements/<key>","value":{"type":"<ComponentName>","props":{...},"children":[...]}}
 
-For INTERACTIVE components (InteractiveCard, Button), also set initial data:
-{"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"green"}}
+For INTERACTIVE components (InteractiveCard, Button, Input, Select), also set initial data:
+{"op":"set","path":"/data","value":{"card1Color":"blue","formField1":"","formField2":""}}
 
-Example of interactive cards that change color on click:
-{"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"red"}}
-{"op":"set","path":"/root","value":"stack1"}
-{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"horizontal","gap":"md"},"children":["card1","card2"]}}
-{"op":"add","path":"/elements/card1","value":{"type":"InteractiveCard","props":{"title":"Card 1","colorPath":"/card1Color","action":{"name":"toggleColor","params":{"path":"/card1Color"}}},"children":["text1"]}}
-{"op":"add","path":"/elements/text1","value":{"type":"Text","props":{"content":"Click to change color!"},"children":[]}}
-{"op":"add","path":"/elements/card2","value":{"type":"InteractiveCard","props":{"title":"Card 2","colorPath":"/card2Color","action":{"name":"toggleColor","params":{"path":"/card2Color"}}},"children":["text2"]}}
-{"op":"add","path":"/elements/text2","value":{"type":"Text","props":{"content":"Click me too!"},"children":[]}}
+## AVAILABLE ACTIONS
+
+Actions are triggered by Button or InteractiveCard components via the "action" prop:
+
+1. **set** - Set a data value
+   {"name":"set","params":{"path":"/someField","value":"newValue"}}
+
+2. **toggle** - Toggle a boolean
+   {"name":"toggle","params":{"path":"/isEnabled"}}
+
+3. **toggleColor** - Cycle through colors (blue, green, red, purple, orange, yellow, pink, teal)
+   {"name":"toggleColor","params":{"path":"/cardColor"}}
+
+4. **increment** - Increment a number
+   {"name":"increment","params":{"path":"/counter","by":1}}
+
+5. **apiCall** - Make an HTTP request to the API (IMPORTANT for forms!)
+   {"name":"apiCall","params":{
+     "endpoint":"/api/inventory",
+     "method":"POST",
+     "bodyPaths":{"itemName":"/form/itemName","itemType":"/form/itemType","unitPrice":"/form/unitPrice"},
+     "revalidate":["/api/inventory"],
+     "successMessage":"Item added successfully!",
+     "resetPaths":["/form/itemName","/form/itemType","/form/unitPrice"]
+   }}
+
+## FORM EXAMPLE (Add Inventory Item)
+
+{"op":"set","path":"/data","value":{"form":{"itemName":"","itemType":"food","unitPrice":"","quantity":""}}}
+{"op":"set","path":"/root","value":"card1"}
+{"op":"add","path":"/elements/card1","value":{"type":"Card","props":{"title":"Add Inventory Item","padding":"md"},"children":["stack1"]}}
+{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"vertical","gap":"md"},"children":["input1","select1","input2","input3","btn1"]}}
+{"op":"add","path":"/elements/input1","value":{"type":"Input","props":{"label":"Item Name","placeholder":"Enter item name","valuePath":"/form/itemName"},"children":[]}}
+{"op":"add","path":"/elements/select1","value":{"type":"Select","props":{"label":"Item Type","valuePath":"/form/itemType","options":[{"value":"food","label":"Food"},{"value":"supplies","label":"Supplies"},{"value":"medicine","label":"Medicine"},{"value":"accessories","label":"Accessories"}]},"children":[]}}
+{"op":"add","path":"/elements/input2","value":{"type":"Input","props":{"label":"Unit Price (cents)","placeholder":"e.g. 1999 for $19.99","valuePath":"/form/unitPrice","type":"number"},"children":[]}}
+{"op":"add","path":"/elements/input3","value":{"type":"Input","props":{"label":"Quantity","placeholder":"Initial stock","valuePath":"/form/quantity","type":"number"},"children":[]}}
+{"op":"add","path":"/elements/btn1","value":{"type":"Button","props":{"label":"Add Item","variant":"primary","action":{"name":"apiCall","params":{"endpoint":"/api/inventory","method":"POST","bodyPaths":{"itemName":"/form/itemName","itemType":"/form/itemType","unitPrice":"/form/unitPrice","quantity":"/form/quantity"},"revalidate":["/api/inventory"],"successMessage":"Inventory item added!","resetPaths":["/form/itemName","/form/unitPrice","/form/quantity"]}}},"children":[]}}
+
+## API ENDPOINTS FOR FORMS
+
+When creating forms, use these endpoints with apiCall:
+- POST /api/pets - Add pet: {name, species, breed, age, price, description}
+- POST /api/customers - Add customer: {firstName, lastName, email, phone, address, city, state, zipCode}
+- POST /api/orders - Create order: {customerId, petId, quantity, notes}
+- POST /api/inventory - Add inventory: {itemName, itemType, unitPrice, species, quantity, reorderLevel, supplier}
+- PATCH /api/pets/:id - Update pet
+- PATCH /api/orders/:id - Update order status
 
 Rules:
-- First line should set /data if using interactive components
+- First line should set /data if using interactive components or forms
+- Initialize form fields in data (e.g., {"form":{"field1":"","field2":""}})
 - Then set /root
 - Each element needs a unique key
 - Children are arrays of element keys (strings)
 - Props must match the component schema exactly
 - Keep it simple and visually appealing
-- Use realistic placeholder data that makes sense for the component type`;
+- Use realistic placeholder data that makes sense for the component type
+- For forms that submit data to the API, ALWAYS use the apiCall action with proper bodyPaths`;
 
 const weatherTool = tool({
   description: "Get the current weather for a location",

@@ -269,6 +269,13 @@ export const toolCatalog = createCatalog({
       description: "Math calculation display",
     },
 
+    // Status feedback for API calls
+    StatusMessage: {
+      props: z.object({}),
+      description:
+        "Displays loading/error/success feedback from API calls. Automatically reads /apiLoading, /apiError, /apiSuccess from data context. Include in forms to show feedback.",
+    },
+
     // Dynamic Data Components
     DataList: {
       props: z.object({
@@ -408,26 +415,44 @@ export const toolCatalog = createCatalog({
 export const componentList = `
 INTERACTIVE COMPONENTS (for user interaction):
 Button: Clickable button with label, action, variant (primary|secondary|outline|danger), size.
-  - action: { name: "toggleColor"|"set"|"increment"|"toggle", params: { path: "/dataKey", ... } }
+  - action: { name: "toggleColor"|"set"|"increment"|"toggle"|"apiCall", params: {...} }
 InteractiveCard: Card that changes color on click. Props: title, colorPath, action, padding.
   - colorPath: data path to read color from (e.g., "/card1Color")
   - action: { name: "toggleColor", params: { path: "/card1Color" } }
   - Colors: blue, green, red, purple, orange, yellow, pink, teal
 
+AVAILABLE ACTIONS:
+  - set: { name: "set", params: { path: "/key", value: "newValue" } }
+  - toggle: { name: "toggle", params: { path: "/isEnabled" } }
+  - toggleColor: { name: "toggleColor", params: { path: "/cardColor" } }
+  - increment: { name: "increment", params: { path: "/counter", by: 1 } }
+  - apiCall: Submit form data to API endpoint:
+    { name: "apiCall", params: {
+      endpoint: "/api/inventory",
+      method: "POST",
+      bodyPaths: { "itemName": "/form/itemName", "itemType": "/form/itemType" },
+      revalidate: ["/api/inventory"],
+      successMessage: "Item added!",
+      resetPaths: ["/form/itemName"]
+    }}
+
 FORM INPUTS (for user data entry):
 Input: Text input bound to data. Props: label, placeholder, valuePath, type (text|email|number|password|tel|url), disabled.
-  - valuePath: data path to read/write value (e.g., "/formData/name")
+  - valuePath: data path to read/write value (e.g., "/form/name")
   - Changes automatically update data via set action
 Select: Dropdown select bound to data. Props: label, valuePath, options [{value, label}], placeholder, disabled.
   - options: array of {value: "val", label: "Display"} objects
 Textarea: Multiline text input. Props: label, placeholder, valuePath, rows, disabled.
 Checkbox: Checkbox bound to boolean. Props: label, checkedPath, disabled.
-  - checkedPath: data path to boolean value (e.g., "/formData/agreed")
+  - checkedPath: data path to boolean value (e.g., "/form/agreed")
 RadioGroup: Radio button group. Props: label, valuePath, options [{value, label}], disabled.
   - Only one option can be selected at a time
+StatusMessage: Shows loading/success/error feedback from apiCall actions. No props required.
+  - Reads /apiLoading, /apiError, /apiSuccess automatically
+  - Include in forms to display API call results
 
 FORM DATA: For forms, include initial data in your tree:
-  {"op":"set","path":"/data","value":{"formData":{"name":"","email":"","species":"dog","agreed":false}}}
+  {"op":"set","path":"/data","value":{"form":{"name":"","email":"","species":"dog","agreed":false}}}
 
 INITIAL DATA: For interactive components, include a "data" property in your tree:
   {"op":"set","path":"/data","value":{"card1Color":"blue","card2Color":"green"}}

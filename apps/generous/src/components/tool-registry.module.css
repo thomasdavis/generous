@@ -695,6 +695,39 @@
 }
 
 /* ============================================
+ * STATUS MESSAGE (API feedback)
+ * ============================================ */
+
+.statusMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  margin-top: var(--space-2);
+}
+
+.statusMessage[data-type="loading"] {
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+}
+
+.statusMessage[data-type="error"] {
+  background: oklch(0.35 0.08 25 / 0.3);
+  border: 1px solid var(--state-error-text);
+  color: var(--state-error-text);
+}
+
+.statusMessage[data-type="success"] {
+  background: oklch(0.4 0.1 145 / 0.3);
+  border: 1px solid var(--state-success-text);
+  color: var(--state-success-text);
+}
+
+/* ============================================
  * PET LIST
  * ============================================ */
 

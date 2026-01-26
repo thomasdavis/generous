@@ -234,6 +234,11 @@ function Dashboard() {
         <div className={styles.logo}>Generous</div>
         <div className={styles.toolbarActions}>
           <Button variant="ghost" size="sm" asChild>
+            <a href="/about" target="_blank" rel="noopener noreferrer">
+              About
+            </a>
+          </Button>
+          <Button variant="ghost" size="sm" asChild>
             <a href="/api-docs" target="_blank" rel="noopener noreferrer">
               API Docs
             </a>
