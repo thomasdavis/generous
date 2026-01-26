@@ -3,5 +3,5 @@
   "framework": "nextjs",
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter=generous build",
-  "outputDirectory": "apps/generous/.next"
+  "outputDirectory": ".next"
 }
