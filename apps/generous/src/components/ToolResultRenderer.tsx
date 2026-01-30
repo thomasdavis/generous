@@ -7,7 +7,7 @@ import {
   useData,
   VisibilityProvider,
 } from "@json-render/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { mutate } from "swr";
 import styles from "./Chat.module.css";
 import { toolRegistry } from "./tool-registry";
@@ -110,6 +110,10 @@ export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererPro
   const [showDebug, setShowDebug] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Stabilize toolData by serializing - prevents re-fetching on object reference changes
+  const toolDataKey = useMemo(() => JSON.stringify(toolData), [toolData]);
+  const fetchedKeyRef = useRef<string | null>(null);
+
   const copyToClipboard = useCallback(async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -121,6 +125,13 @@ export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererPro
   }, []);
 
   useEffect(() => {
+    // Skip if we've already fetched for this exact data
+    const cacheKey = `${toolName}:${toolDataKey}`;
+    if (fetchedKeyRef.current === cacheKey) {
+      return;
+    }
+    fetchedKeyRef.current = cacheKey;
+
     let cancelled = false;
 
     async function fetchUI() {
@@ -180,7 +191,7 @@ export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererPro
     return () => {
       cancelled = true;
     };
-  }, [toolName, toolData]);
+  }, [toolName, toolDataKey, toolData]);
 
   if (error) {
     return (
