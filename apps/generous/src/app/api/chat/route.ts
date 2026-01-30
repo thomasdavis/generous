@@ -1,4 +1,5 @@
 import { openai } from "@ai-sdk/openai";
+import { registrySearchTool } from "@tpmjs/registry-search";
 import { convertToModelMessages, generateText, streamText, tool } from "ai";
 import { z } from "zod";
 import { componentList } from "@/lib/tool-catalog";
@@ -597,6 +598,88 @@ Generate a visually appealing component using the available components. Use real
   },
 });
 
+// Create TPMJS tools with env vars forwarding
+const createTpmjsTools = (envVars: Record<string, string>) => {
+  // Create a wrapped execute tool that auto-injects env vars
+  const wrappedExecuteTool = tool({
+    description:
+      "Execute a tool from the TPMJS registry in a secure sandbox. Use registrySearch first to find the toolId. API keys from Settings are automatically included.",
+    inputSchema: z.object({
+      toolId: z
+        .string()
+        .describe("Tool identifier from search results (format: @package/name::toolName)"),
+      params: z
+        .record(z.string(), z.unknown())
+        .describe("Tool-specific parameters as required by the tool"),
+    }),
+    execute: async ({ toolId, params }) => {
+      // Parse toolId into packageName and name
+      // Format: @scope/package::toolName or package::toolName
+      const parts = toolId.split("::");
+      if (parts.length !== 2) {
+        return {
+          error: true,
+          message: `Invalid toolId format: ${toolId}. Expected format: @package/name::toolName`,
+          toolId,
+        };
+      }
+
+      const packageName = parts[0];
+      const name = parts[1];
+
+      // Call the executor service directly with env vars
+      const executorUrl = process.env.TPMJS_EXECUTOR_URL || "https://executor.tpmjs.com";
+
+      try {
+        const response = await fetch(`${executorUrl}/execute-tool`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            packageName,
+            name,
+            version: "latest",
+            importUrl: `https://esm.sh/${packageName}`,
+            params,
+            env: envVars,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          return {
+            error: true,
+            message: `Execution failed: ${response.status} ${errorText}`,
+            toolId,
+          };
+        }
+
+        const result = await response.json();
+
+        if (!result.success) {
+          return {
+            error: true,
+            message: result.error || "Tool execution failed",
+            toolId,
+          };
+        }
+
+        return result.output;
+      } catch (error) {
+        return {
+          error: true,
+          message: error instanceof Error ? error.message : "Unknown execution error",
+          toolId,
+        };
+      }
+    },
+  });
+
+  return {
+    registrySearch: registrySearchTool,
+    registryExecute: wrappedExecuteTool,
+  };
+};
+
 const baseTools = {
   weather: weatherTool,
   calculator: calculatorTool,
@@ -609,6 +692,7 @@ const baseTools = {
 export async function POST(req: Request) {
   const body = await req.json();
   const messages = body.messages ?? [];
+  const envVars = (body.envVars ?? {}) as Record<string, string>;
 
   if (!messages.length) {
     return new Response("No messages provided", { status: 400 });
@@ -619,9 +703,10 @@ export async function POST(req: Request) {
   const protocol = req.headers.get("x-forwarded-proto") || "http";
   const baseUrl = `${protocol}://${host}`;
 
-  // Create tools with the correct base URL
+  // Create tools with the correct base URL and env vars
   const apiTools = createApiTools(baseUrl);
-  const tools = { ...baseTools, ...apiTools };
+  const tpmjsTools = createTpmjsTools(envVars);
+  const tools = { ...baseTools, ...apiTools, ...tpmjsTools };
 
   const modelMessages = await convertToModelMessages(messages, { tools });
 
@@ -636,6 +721,82 @@ export async function POST(req: Request) {
 - search: Search the web for information
 - timer: Set countdown timers
 - createComponent: Create persistent UI widgets for the dashboard
+
+## TPMJS TOOL REGISTRY
+You have access to a powerful tool registry (tpmjs.com) that lets you discover and execute thousands of external tools dynamically. Use this when users need capabilities beyond the built-in tools.
+
+### registrySearch - Discover Tools
+Search the registry using natural language queries.
+
+Parameters:
+- query (required): Keywords to search for (e.g., "web scraping", "send email", "pdf generation", "image resize")
+- limit (optional): Max results 1-20, default 5
+
+Response format:
+{
+  "query": "web scraping",
+  "matchCount": 3,
+  "tools": [
+    {
+      "toolId": "@firecrawl/ai-sdk::scrapeTool",  // Use this ID with registryExecute
+      "name": "scrapeTool",
+      "description": "Scrape any website into clean markdown",
+      "category": "web-scraping",
+      "requiredEnvVars": ["FIRECRAWL_API_KEY"],   // API keys needed (auto-forwarded from Settings)
+      "healthStatus": "HEALTHY",
+      "qualityScore": 0.9
+    }
+  ]
+}
+
+### registryExecute - Run Tools
+Execute a discovered tool in a secure sandbox.
+
+Parameters:
+- toolId (required): The tool ID from search results (format: "package::toolName")
+- params (required): Tool-specific parameters object
+
+Response format:
+{
+  "toolId": "@example/tool::functionName",
+  "executionTimeMs": 1234,
+  "output": { ... }  // Tool-specific output
+}
+
+### WORKFLOW
+1. When user requests something beyond built-in capabilities, call registrySearch with relevant keywords
+2. Review the search results - note the toolId and requiredEnvVars for each tool
+3. If a tool requires API keys (requiredEnvVars), inform the user they need to add them in Settings
+4. Call registryExecute with the toolId and appropriate params
+5. The user's API keys from Settings are AUTOMATICALLY forwarded - you don't need to pass env vars
+
+### CREATING PERSISTENT WIDGETS FROM REGISTRY TOOLS
+When a user asks for a persistent widget that displays data from a registry tool:
+1. First use registrySearch to find the right tool
+2. Use registryExecute to run it and show the results
+3. Then use createComponent to create a RegistryFetcher widget with the SAME toolId + params
+
+The RegistryFetcher component will re-fetch the data on page refresh and auto-refresh at intervals:
+{"type":"RegistryFetcher","props":{"toolId":"@package/name::toolName","params":{...},"dataKey":"keyToExtract","refreshInterval":10000,"title":"Widget Title"}}
+
+Example: User says "Show my Unsandbox services as a widget"
+1. registrySearch({ query: "unsandbox list services" })
+2. registryExecute({ toolId: "@tpmjs/tools-unsandbox::listServices", params: {} })
+3. createComponent with description mentioning RegistryFetcher + same toolId + params
+
+### EXAMPLES
+User: "Scrape the content from example.com"
+1. registrySearch({ query: "web scraping" })
+2. Find a scraping tool like "@firecrawl/ai-sdk::scrapeTool"
+3. registryExecute({ toolId: "@firecrawl/ai-sdk::scrapeTool", params: { url: "https://example.com" } })
+
+User: "Search the web for AI news"
+1. registrySearch({ query: "web search" })
+2. Find a search tool and execute with the query
+
+User: "Generate a PDF from this text"
+1. registrySearch({ query: "pdf generation" })
+2. Execute the found tool with appropriate params
 
 ## PET STORE API
 You have full access to the Pet Store API with the following capabilities:

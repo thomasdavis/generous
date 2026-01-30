@@ -408,6 +408,19 @@ export const toolCatalog = createCatalog({
       }),
       description: "Fetches and displays pet categories from /api/categories.",
     },
+
+    // Generic Registry Fetcher - works with ANY TPMJS registry tool
+    RegistryFetcher: {
+      props: z.object({
+        toolId: z.string(),
+        params: z.record(z.string(), z.unknown()).nullable(),
+        dataKey: z.string().nullable(),
+        refreshInterval: z.number().nullable(),
+        title: z.string().nullable(),
+      }),
+      description:
+        "Fetches data from ANY TPMJS registry tool on mount and auto-refreshes. Use this for persistent widgets that call arbitrary registry tools.",
+    },
   },
 });
 
@@ -544,4 +557,31 @@ API REFERENCE (all endpoints support GET for reading, POST for creating):
 IMPORTANT: When creating components that need LIVE data from APIs, use the List components (PetList, CustomerList, etc.).
 These components fetch data dynamically and auto-refresh, so new data will appear automatically.
 Use the 'fields' prop to customize which data is displayed - this is key for creating focused views.
+
+TPMJS REGISTRY DATA COMPONENT:
+
+RegistryFetcher: Fetches data from ANY TPMJS registry tool on mount and auto-refreshes.
+  Use this to create PERSISTENT widgets for arbitrary registry tools. The component will:
+  - Call /api/registry-execute with the same toolId + params you used in registryExecute
+  - Automatically include the user's API keys from Settings (localStorage)
+  - Auto-refresh at the specified interval
+  - Render arrays as cards, objects as JSON
+
+  Props:
+  - toolId (required): The tool identifier, e.g., "@tpmjs/tools-unsandbox::listServices"
+  - params: Object of parameters to pass to the tool (default: {})
+  - dataKey: Key to extract from response, e.g., "services" extracts data.services
+  - refreshInterval: Auto-refresh in ms (default: 10000)
+  - title: Optional title to display above the data
+
+  When to use RegistryFetcher:
+  1. User asks you to execute a registry tool via registrySearch + registryExecute
+  2. They want to see that data as a persistent widget (e.g., "show my services")
+  3. Create a RegistryFetcher component with the SAME toolId + params you just executed
+
+  Example - Unsandbox Services Widget:
+  {"op":"add","path":"/elements/services","value":{"type":"RegistryFetcher","props":{"toolId":"@tpmjs/tools-unsandbox::listServices","params":{},"dataKey":"services","refreshInterval":10000,"title":"My Unsandbox Services"}}}
+
+  Example - Web Search Results Widget:
+  {"op":"add","path":"/elements/search","value":{"type":"RegistryFetcher","props":{"toolId":"@exalabs/ai-sdk::webSearch","params":{"query":"latest AI news"},"refreshInterval":60000,"title":"AI News"}}}
 `;

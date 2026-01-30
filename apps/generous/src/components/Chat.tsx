@@ -4,10 +4,32 @@ import { useChat } from "@ai-sdk/react";
 import { Badge, Button } from "@generous/ui";
 import { DefaultChatTransport } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+const ENV_STORAGE_KEY = "generous-env-vars";
+
+function getEnvVarsFromStorage(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = localStorage.getItem(ENV_STORAGE_KEY);
+    if (!stored) return {};
+    const vars = JSON.parse(stored) as Array<{ key: string; value: string }>;
+    return vars.reduce(
+      (acc, { key, value }) => {
+        acc[key] = value;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  } catch {
+    return {};
+  }
+}
+
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso";
 import { useAppState } from "@/lib/app-state";
 import {
   type ChatMessage,
+  clearChatHistory,
   getChatMessageCount,
   getRecentChatHistory,
   saveChatMessages,
@@ -155,7 +177,16 @@ function MessageItem({
 
 export function Chat() {
   const { addComponent } = useAppState();
-  const transport = useMemo(() => new DefaultChatTransport({ api: "/api/chat" }), []);
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: "/api/chat",
+        body: () => ({
+          envVars: getEnvVarsFromStorage(),
+        }),
+      }),
+    [],
+  );
   const { messages, sendMessage, status, stop } = useChat({
     transport,
   });
@@ -274,6 +305,15 @@ export function Chat() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleClearChat = async () => {
+    if (!confirm("Clear all chat history? This cannot be undone.")) return;
+    await clearChatHistory();
+    setLoadedHistory([]);
+    savedMessageIds.current.clear();
+    addedComponents.current.clear();
+    window.location.reload();
+  };
+
   // Scroll to bottom when new messages arrive
   useEffect(() => {
     if (messages.length > 0 && virtuosoRef.current) {
@@ -342,9 +382,14 @@ export function Chat() {
         </span>
         <div style={{ display: "flex", gap: "4px" }}>
           {allMessages.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={copyMessagesJson}>
-              {copied ? "Copied!" : "Copy JSON"}
-            </Button>
+            <>
+              <Button variant="ghost" size="sm" onClick={copyMessagesJson}>
+                {copied ? "Copied!" : "Copy JSON"}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleClearChat}>
+                Clear
+              </Button>
+            </>
           )}
           {isLoading && (
             <Button variant="ghost" size="sm" onClick={stop}>

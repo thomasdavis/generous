@@ -253,6 +253,11 @@ function Dashboard() {
               Component Catalog
             </a>
           </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <a href="/settings" target="_blank" rel="noopener noreferrer">
+              Settings
+            </a>
+          </Button>
           <Button variant="ghost" size="sm" onClick={handleExport}>
             {copied ? "Copied!" : "Export State"}
           </Button>

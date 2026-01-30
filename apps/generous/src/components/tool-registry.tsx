@@ -1464,6 +1464,105 @@ export function CategoryList({ element }: ComponentRenderProps) {
   );
 }
 
+// Helper to get env vars from localStorage
+function getEnvVarsFromStorage(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const stored = localStorage.getItem("generous-env-vars");
+    if (!stored) return {};
+    const vars = JSON.parse(stored) as Array<{ key: string; value: string }>;
+    return vars.reduce(
+      (acc, { key, value }) => {
+        acc[key] = value;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+  } catch {
+    return {};
+  }
+}
+
+// RegistryFetcher Component - fetches data from ANY TPMJS registry tool
+export function RegistryFetcher({ element }: ComponentRenderProps) {
+  const { toolId, params, dataKey, refreshInterval, title } = element.props as {
+    toolId: string;
+    params?: Record<string, unknown> | null;
+    dataKey?: string | null;
+    refreshInterval?: number | null;
+    title?: string | null;
+  };
+
+  // Create stable cache key
+  const cacheKey = `registry:${toolId}:${JSON.stringify(params || {})}`;
+
+  const registryFetcher = async () => {
+    const envVars = getEnvVarsFromStorage();
+    const response = await fetch("/api/registry-execute", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-generous-env-vars": JSON.stringify(envVars),
+      },
+      body: JSON.stringify({ toolId, params: params || {} }),
+    });
+    return response.json();
+  };
+
+  const { data, error, isLoading } = useSWR(cacheKey, registryFetcher, {
+    refreshInterval: refreshInterval || 10000,
+    revalidateOnFocus: true,
+  });
+
+  if (isLoading) {
+    return (
+      <div className={styles.dataListLoading}>
+        <div className={styles.dataListSpinner} />
+        <span>Fetching from {toolId}...</span>
+      </div>
+    );
+  }
+
+  if (error || data?.error) {
+    return (
+      <div className={styles.dataListError}>
+        Error: {data?.message || error?.message || "Failed to fetch"}
+      </div>
+    );
+  }
+
+  // Extract data if dataKey specified
+  const displayData = dataKey && data?.data ? data.data[dataKey] : data?.data;
+
+  // Render as formatted JSON or auto-detect array for cards
+  if (Array.isArray(displayData)) {
+    return (
+      <div className={styles.registryFetcherContainer}>
+        {title && <div className={styles.registryFetcherTitle}>{title}</div>}
+        <div className={styles.registryFetcherMeta}>
+          {displayData.length} items from {toolId}
+        </div>
+        <div className={styles.registryFetcherItems}>
+          {displayData.map((item, idx) => (
+            <div key={item?.id || idx} className={styles.registryFetcherItem}>
+              <pre className={styles.registryFetcherJson}>{JSON.stringify(item, null, 2)}</pre>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Single object or primitive - render as JSON
+  return (
+    <div className={styles.registryFetcherContainer}>
+      {title && <div className={styles.registryFetcherTitle}>{title}</div>}
+      <div className={styles.registryFetcherMeta}>Result from {toolId}</div>
+      <pre className={styles.registryFetcherJson}>{JSON.stringify(displayData, null, 2)}</pre>
+    </div>
+  );
+}
+
 // Export registry
 export const toolRegistry = {
   Button,
@@ -1502,4 +1601,5 @@ export const toolRegistry = {
   InventoryList,
   StoreStats,
   CategoryList,
+  RegistryFetcher,
 };
