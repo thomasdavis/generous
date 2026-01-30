@@ -1,6 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { registrySearchTool } from "@tpmjs/registry-search";
-import { convertToModelMessages, generateText, streamText, tool } from "ai";
+import { convertToModelMessages, generateText, stepCountIs, streamText, tool } from "ai";
 import { z } from "zod";
 import { componentList } from "@/lib/tool-catalog";
 
@@ -712,7 +712,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: openai("gpt-4.1-mini"),
-    maxSteps: 200,
+    stopWhen: stepCountIs(200),
     system: `You are a helpful assistant for a Pet Store management application. You have access to a comprehensive REST API and various utility tools.
 
 ## UTILITY TOOLS
