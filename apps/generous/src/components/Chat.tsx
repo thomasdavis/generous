@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { Badge, Button } from "@generous/ui";
+import { Button } from "@generous/ui";
 import { DefaultChatTransport } from "ai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -144,9 +144,16 @@ function MessageItem({
 }) {
   const parts = "parts" in message ? message.parts : undefined;
   const content = "content" in message ? message.content : undefined;
+  const isUser = message.role === "user";
 
   return (
     <div className={styles.message} data-role={message.role}>
+      <div className={styles.messageHeader}>
+        <div className={styles.messageAvatar} data-role={message.role}>
+          {isUser ? "Y" : "AI"}
+        </div>
+        <span className={styles.messageRole}>{isUser ? "You" : "Assistant"}</span>
+      </div>
       {parts?.map((part: unknown, i: number) => {
         const p = part as { type?: string; text?: string };
         if (p.type === "text" && p.text) {
@@ -352,12 +359,7 @@ export function Chat() {
       <div className={styles.container}>
         <div className={styles.header}>
           <span className="drag-handle" style={{ cursor: "grab" }}>
-            <span className={styles.headerTitle}>
-              Chat
-              <Badge variant="accent" size="sm">
-                AI
-              </Badge>
-            </span>
+            <span className={styles.headerTitle}>Chat</span>
           </span>
         </div>
         <div className={styles.messages}>
@@ -373,14 +375,9 @@ export function Chat() {
     <div className={styles.container}>
       <div className={styles.header}>
         <span className="drag-handle" style={{ cursor: "grab" }}>
-          <span className={styles.headerTitle}>
-            Chat
-            <Badge variant="accent" size="sm">
-              AI
-            </Badge>
-          </span>
+          <span className={styles.headerTitle}>Chat</span>
         </span>
-        <div style={{ display: "flex", gap: "4px" }}>
+        <div className="no-drag" style={{ display: "flex", gap: "4px" }}>
           {allMessages.length > 0 && (
             <>
               <Button variant="ghost" size="sm" onClick={copyMessagesJson}>
@@ -399,7 +396,7 @@ export function Chat() {
         </div>
       </div>
 
-      <div className={styles.messages}>
+      <div className={`${styles.messages} no-drag`} onMouseDown={(e) => e.stopPropagation()}>
         {allMessages.length === 0 ? (
           <div className={styles.empty}>
             <svg
@@ -456,7 +453,11 @@ export function Chat() {
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.inputArea}>
+      <form
+        onSubmit={handleSubmit}
+        className={`${styles.inputArea} no-drag`}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <input
           className={styles.input}
           value={input}

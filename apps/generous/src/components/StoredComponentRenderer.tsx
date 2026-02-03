@@ -196,7 +196,7 @@ export function StoredComponentRenderer({ component }: StoredComponentRendererPr
     <div className={styles.container}>
       <div className={styles.header}>
         <span className={`${styles.title} drag-handle`}>{component.name}</span>
-        <div className={styles.headerActions}>
+        <div className={`${styles.headerActions} no-drag`} onMouseDown={(e) => e.stopPropagation()}>
           <button
             type="button"
             className={styles.headerBtn}
@@ -219,11 +219,11 @@ export function StoredComponentRenderer({ component }: StoredComponentRendererPr
         </div>
       </div>
       {showJson ? (
-        <div className={styles.jsonView}>
+        <div className={`${styles.jsonView} no-drag`} onMouseDown={(e) => e.stopPropagation()}>
           <pre className={styles.jsonPre}>{JSON.stringify(component.tree, null, 2)}</pre>
         </div>
       ) : (
-        <div className={styles.content}>
+        <div className={`${styles.content} no-drag`} onMouseDown={(e) => e.stopPropagation()}>
           <InteractiveRenderer tree={tree} />
         </div>
       )}

@@ -11,6 +11,7 @@ const GridLayout = RGL as unknown as React.ComponentType<{
   rowHeight: number;
   width: number;
   draggableHandle?: string;
+  draggableCancel?: string;
   onLayoutChange?: (
     layout: Array<{ i: string; x: number; y: number; w: number; h: number }>,
   ) => void;
@@ -274,6 +275,7 @@ function Dashboard() {
         rowHeight={100}
         width={width - 48}
         draggableHandle=".drag-handle"
+        draggableCancel=".no-drag"
         onLayoutChange={handleLayoutChange}
         onDragStop={handleDragStop}
         compactType="vertical"
