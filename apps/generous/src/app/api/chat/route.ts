@@ -2,6 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { registrySearchTool } from "@tpmjs/registry-search";
 import { convertToModelMessages, generateText, stepCountIs, streamText, tool } from "ai";
 import { z } from "zod";
+import { parseJSONLToTree } from "@/lib/parse-jsonl";
 import { componentList } from "@/lib/tool-catalog";
 
 export const maxDuration = 60;
@@ -507,39 +508,7 @@ const createApiTools = (baseUrl: string) => ({
   }),
 });
 
-// Helper to parse JSONL into a tree
-function parseJSONLToTree(jsonl: string): {
-  root: string;
-  elements: Record<string, unknown>;
-  data?: Record<string, unknown>;
-} | null {
-  const lines = jsonl.trim().split("\n").filter(Boolean);
-  let root: string | null = null;
-  let data: Record<string, unknown> | undefined;
-  const elements: Record<string, unknown> = {};
-
-  for (const line of lines) {
-    try {
-      const patch = JSON.parse(line);
-      if (patch.op === "set" && patch.path === "/root") {
-        root = patch.value;
-      } else if (patch.op === "set" && patch.path === "/data") {
-        data = patch.value;
-      } else if (patch.op === "add" && patch.path.startsWith("/elements/")) {
-        const key = patch.path.replace("/elements/", "");
-        elements[key] = patch.value;
-      }
-    } catch {
-      // Skip invalid lines
-    }
-  }
-
-  if (!root || Object.keys(elements).length === 0) {
-    return null;
-  }
-
-  return { root, elements, data };
-}
+// parseJSONLToTree imported from @/lib/parse-jsonl
 
 const createComponentTool = tool({
   description:
@@ -559,7 +528,7 @@ const createComponentTool = tool({
       .string()
       .optional()
       .describe(
-        "Any specific data or context to include. IMPORTANT: If using a RegistryFetcher, you MUST include the exact full toolId here (e.g., 'toolId=firecrawl-aisdk::searchTool, params={query:\"AI news\"}'). Never abbreviate package names.",
+        "Any specific data or context to include. IMPORTANT: If using a RegistryFetcher, you MUST include: (1) the exact full toolId (e.g., 'firecrawl-aisdk::searchTool'), (2) the params, and (3) the actual top-level response keys from registryExecute so the dataKey is set correctly (e.g., 'toolId=firecrawl-aisdk::searchTool, params={query:\"AI news\"}, responseFormat={web: [{url, title, description}]}, dataKey=web'). Never abbreviate package names. The dataKey MUST match a real key from the response.",
       ),
   }),
   execute: async ({ name, description, dataContext }) => {
@@ -774,16 +743,22 @@ Components should fetch fresh data on every page load. Use the **RegistryFetcher
 
 ### WORKFLOW FOR WIDGET CREATION
 1. \`registrySearch\` → find the right tool
-2. \`registryExecute\` → verify it works, show user the data
-3. \`createComponent\` → In the description, you MUST include the EXACT full toolId string (e.g. "firecrawl-aisdk::searchTool" NOT "firecrawl::searchTool"). Copy-paste it from the registryExecute call. Do NOT abbreviate or shorten package names.
+2. \`registryExecute\` → verify it works, inspect the response structure
+3. \`createComponent\` → In the dataContext, you MUST include:
+   - The EXACT full toolId string (copy-paste from registryExecute, never abbreviate)
+   - The actual top-level keys from the registryExecute response (e.g., if response was \`{web: [...]}\`, specify \`dataKey="web"\`)
+   - The params used
 
 ### Example: "Create a widget showing Perplexity search results for AI news"
 1. \`registrySearch({ query: "perplexity search" })\`
 2. \`registryExecute({ toolId: "@perplexity-ai/ai-sdk::perplexitySearch", params: { query: "AI news" } })\`
-3. \`createComponent\` with description:
-   "Create a Card containing a RegistryFetcher with toolId='@perplexity-ai/ai-sdk::perplexitySearch', params={query:'AI news'}, refreshInterval=60000. Display results as a list of SearchResult components."
+   → Response: \`{ results: [{ title, url, content }] }\`
+3. \`createComponent\` with dataContext:
+   "toolId=@perplexity-ai/ai-sdk::perplexitySearch, params={query:'AI news'}, responseKeys={results}, dataKey='results'"
 
-**CRITICAL**: The toolId in the RegistryFetcher MUST exactly match the toolId used in registryExecute. Never shorten or modify package names (e.g. use "firecrawl-aisdk::searchTool" not "firecrawl::searchTool").
+**CRITICAL**:
+- The toolId in the RegistryFetcher MUST exactly match the toolId used in registryExecute. Never shorten or modify package names.
+- The dataKey MUST match an actual top-level key from the registryExecute response. Inspect the response and use the correct key (e.g., "web" not "results" if the response has a "web" key).
 
 ### When Static Data Makes Sense
 Only use static data for:

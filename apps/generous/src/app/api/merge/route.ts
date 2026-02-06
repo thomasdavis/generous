@@ -1,5 +1,6 @@
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
+import { parseJSONLToTree } from "@/lib/parse-jsonl";
 import { componentList } from "@/lib/tool-catalog";
 
 export const maxDuration = 60;
@@ -21,39 +22,7 @@ Rules for merging:
 
 Output ONLY the merged JSONL, no explanation.`;
 
-// Helper to parse JSONL into a tree
-function parseJSONLToTree(jsonl: string): {
-  root: string;
-  elements: Record<string, unknown>;
-  data?: Record<string, unknown>;
-} | null {
-  const lines = jsonl.trim().split("\n").filter(Boolean);
-  let root: string | null = null;
-  let data: Record<string, unknown> | undefined;
-  const elements: Record<string, unknown> = {};
-
-  for (const line of lines) {
-    try {
-      const patch = JSON.parse(line);
-      if (patch.op === "set" && patch.path === "/root") {
-        root = patch.value;
-      } else if (patch.op === "set" && patch.path === "/data") {
-        data = patch.value;
-      } else if (patch.op === "add" && patch.path.startsWith("/elements/")) {
-        const key = patch.path.replace("/elements/", "");
-        elements[key] = patch.value;
-      }
-    } catch {
-      // Skip invalid lines
-    }
-  }
-
-  if (!root || Object.keys(elements).length === 0) {
-    return null;
-  }
-
-  return { root, elements, data };
-}
+// parseJSONLToTree imported from @/lib/parse-jsonl
 
 export async function POST(req: Request) {
   const body = await req.json();

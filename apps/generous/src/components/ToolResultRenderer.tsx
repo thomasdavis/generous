@@ -9,15 +9,9 @@ import {
 } from "@json-render/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { mutate } from "swr";
+import { parseJSONLToTree, type UITree } from "@/lib/parse-jsonl";
 import styles from "./Chat.module.css";
 import { toolRegistry } from "./tool-registry";
-
-// UITree type matches the json-render expected structure
-interface UITree {
-  root: string;
-  elements: Record<string, unknown>;
-  data?: Record<string, unknown>;
-}
 
 // Color cycle for toggle actions
 const colorCycle = ["blue", "green", "red", "purple", "orange", "yellow", "pink", "teal"];
@@ -72,35 +66,7 @@ interface ToolResultRendererProps {
   toolData: unknown;
 }
 
-// Parse JSONL stream and build UI tree
-function parseJSONLToTree(jsonl: string): UITree | null {
-  const lines = jsonl.trim().split("\n").filter(Boolean);
-  let root: string | null = null;
-  let data: Record<string, unknown> | undefined;
-  const elements: Record<string, unknown> = {};
-
-  for (const line of lines) {
-    try {
-      const patch = JSON.parse(line);
-      if (patch.op === "set" && patch.path === "/root") {
-        root = patch.value;
-      } else if (patch.op === "set" && patch.path === "/data") {
-        data = patch.value;
-      } else if (patch.op === "add" && patch.path.startsWith("/elements/")) {
-        const key = patch.path.replace("/elements/", "");
-        elements[key] = patch.value;
-      }
-    } catch {
-      // Skip invalid JSON lines
-    }
-  }
-
-  if (!root || Object.keys(elements).length === 0) {
-    return null;
-  }
-
-  return { root, elements, data };
-}
+// parseJSONLToTree imported from @/lib/parse-jsonl
 
 export function ToolResultRenderer({ toolName, toolData }: ToolResultRendererProps) {
   const [tree, setTree] = useState<UITree | null>(null);

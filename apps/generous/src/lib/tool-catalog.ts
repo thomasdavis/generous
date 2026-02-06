@@ -570,7 +570,7 @@ RegistryFetcher: Fetches data from ANY TPMJS registry tool on mount and auto-ref
   Props:
   - toolId (required): The tool identifier, e.g., "@tpmjs/tools-unsandbox::listServices"
   - params: Object of parameters to pass to the tool (default: {})
-  - dataKey: Key to extract from response, e.g., "services" extracts data.services
+  - dataKey: MUST match an actual top-level key from the tool's response. e.g., if the tool returns {web: [...]}, use dataKey="web". If it returns {services: [...]}, use dataKey="services". If the response IS the array directly, omit dataKey. NEVER guess - use the actual key from the registryExecute response.
   - refreshInterval: Auto-refresh in ms (default: 10000)
   - title: Optional title to display above the data
 

@@ -1534,6 +1534,18 @@ export function RegistryFetcher({ element }: ComponentRenderProps) {
   // Extract data if dataKey specified
   const displayData = dataKey && data?.data ? data.data[dataKey] : data?.data;
 
+  if (displayData === undefined && dataKey) {
+    const availableKeys = data?.data ? Object.keys(data.data).join(", ") : "none";
+    return (
+      <div className={styles.dataListError}>
+        <div>
+          dataKey &quot;{dataKey}&quot; not found in response. Available keys: {availableKeys}
+        </div>
+        <pre className={styles.registryFetcherJson}>{JSON.stringify(data?.data, null, 2)}</pre>
+      </div>
+    );
+  }
+
   // Render as formatted JSON or auto-detect array for cards
   if (Array.isArray(displayData)) {
     return (
@@ -1544,8 +1556,37 @@ export function RegistryFetcher({ element }: ComponentRenderProps) {
         </div>
         <div className={styles.registryFetcherItems}>
           {displayData.map((item, idx) => (
-            <div key={item?.id || idx} className={styles.registryFetcherItem}>
-              <pre className={styles.registryFetcherJson}>{JSON.stringify(item, null, 2)}</pre>
+            <div key={item?.id || item?.url || idx} className={styles.registryFetcherItem}>
+              {item && typeof item === "object" && (item.title || item.url || item.name) ? (
+                <>
+                  {(item.title || item.name) && (
+                    <div className={styles.registryFetcherItemTitle}>
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          {item.title || item.name}
+                        </a>
+                      ) : (
+                        item.title || item.name
+                      )}
+                    </div>
+                  )}
+                  {item.description && (
+                    <div className={styles.registryFetcherItemDesc}>{item.description}</div>
+                  )}
+                  {item.url && !item.title && !item.name && (
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.registryFetcherItemUrl}
+                    >
+                      {item.url}
+                    </a>
+                  )}
+                </>
+              ) : (
+                <pre className={styles.registryFetcherJson}>{JSON.stringify(item, null, 2)}</pre>
+              )}
             </div>
           ))}
         </div>

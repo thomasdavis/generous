@@ -192,6 +192,13 @@ export function StoredComponentRenderer({
     return (
       <div className={styles.error}>
         <span>Failed to render component</span>
+        {component.jsonl && (
+          <pre
+            style={{ fontSize: 10, whiteSpace: "pre-wrap", wordBreak: "break-all", marginTop: 8 }}
+          >
+            {component.jsonl}
+          </pre>
+        )}
       </div>
     );
   }

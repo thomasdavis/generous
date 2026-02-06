@@ -1436,3 +1436,35 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+.registryFetcherItemTitle {
+  font-weight: 600;
+  font-size: var(--text-sm);
+  margin-bottom: 2px;
+}
+
+.registryFetcherItemTitle a {
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.registryFetcherItemTitle a:hover {
+  text-decoration: underline;
+}
+
+.registryFetcherItemDesc {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.registryFetcherItemUrl {
+  font-size: var(--text-xs);
+  color: #3b82f6;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.registryFetcherItemUrl:hover {
+  text-decoration: underline;
+}
