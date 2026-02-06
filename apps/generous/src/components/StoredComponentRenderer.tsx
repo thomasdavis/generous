@@ -88,12 +88,25 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
         console.log("[Handler] apiCall called with:", params);
 
         // Build request body from data paths or use provided body
-        const requestBody: Record<string, unknown> = body || {};
+        const requestBody: Record<string, unknown> = body ? { ...body } : {};
         if (bodyPaths) {
           for (const [key, path] of Object.entries(bodyPaths)) {
             const value = get(path);
             if (value !== undefined && value !== null && value !== "") {
-              requestBody[key] = value;
+              // Support dot-notation keys like "params.name" -> {params: {name: value}}
+              const parts = key.split(".");
+              if (parts.length > 1) {
+                let target = requestBody as Record<string, unknown>;
+                for (let i = 0; i < parts.length - 1; i++) {
+                  if (!target[parts[i]] || typeof target[parts[i]] !== "object") {
+                    target[parts[i]] = {};
+                  }
+                  target = target[parts[i]] as Record<string, unknown>;
+                }
+                target[parts[parts.length - 1]] = value;
+              } else {
+                requestBody[key] = value;
+              }
             }
           }
         }
@@ -104,9 +117,28 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
         set("/apiLoading", true);
         set("/apiError", null);
 
+        // Auto-include env vars header for internal registry-execute calls
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (endpoint.includes("/api/registry-execute")) {
+          try {
+            const stored = localStorage.getItem("generous-env-vars");
+            if (stored) {
+              const vars = JSON.parse(stored) as Array<{ key: string; value: string }>;
+              const envVars = vars.reduce(
+                (acc: Record<string, string>, v: { key: string; value: string }) => {
+                  acc[v.key] = v.value;
+                  return acc;
+                },
+                {} as Record<string, string>,
+              );
+              headers["x-generous-env-vars"] = JSON.stringify(envVars);
+            }
+          } catch {}
+        }
+
         fetch(endpoint, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: method !== "GET" ? JSON.stringify(requestBody) : undefined,
         })
           .then((response) => response.json().then((data) => ({ response, data })))

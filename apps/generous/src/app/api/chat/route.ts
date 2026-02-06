@@ -46,6 +46,27 @@ Actions are triggered by Button or InteractiveCard components via the "action" p
      "resetPaths":["/form/itemName","/form/itemType","/form/unitPrice"]
    }}
 
+6. **apiCall to registry-execute** - Execute a TPMJS tool from a form (for CRUD widgets!)
+   The "body" field sets STATIC values (like toolId), "bodyPaths" maps form fields to request params.
+   Use DOT NOTATION in bodyPaths keys for nested params (e.g., "params.name" creates {"params":{"name":"value"}}).
+   {"name":"apiCall","params":{
+     "endpoint":"/api/registry-execute",
+     "method":"POST",
+     "body":{"toolId":"@tpmjs/tools-unsandbox::createService"},
+     "bodyPaths":{"params.name":"/form/name"},
+     "successMessage":"Service created!",
+     "resetPaths":["/form/name"]
+   }}
+
+## FORM EXAMPLE (Execute Registry Tool - Create Service)
+
+{"op":"set","path":"/data","value":{"form":{"name":""}}}
+{"op":"set","path":"/root","value":"card1"}
+{"op":"add","path":"/elements/card1","value":{"type":"Card","props":{"title":"Create Service","padding":"md"},"children":["stack1"]}}
+{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"vertical","gap":"md"},"children":["input1","btn1"]}}
+{"op":"add","path":"/elements/input1","value":{"type":"Input","props":{"label":"Service Name","placeholder":"Enter service name","valuePath":"/form/name"},"children":[]}}
+{"op":"add","path":"/elements/btn1","value":{"type":"Button","props":{"label":"Create Service","variant":"primary","action":{"name":"apiCall","params":{"endpoint":"/api/registry-execute","method":"POST","body":{"toolId":"@tpmjs/tools-unsandbox::createService"},"bodyPaths":{"params.name":"/form/name"},"successMessage":"Service created!","resetPaths":["/form/name"]}}},"children":[]}}
+
 ## FORM EXAMPLE (Add Inventory Item)
 
 {"op":"set","path":"/data","value":{"form":{"itemName":"","itemType":"food","unitPrice":"","quantity":""}}}
