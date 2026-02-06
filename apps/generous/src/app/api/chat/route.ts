@@ -558,7 +558,9 @@ const createComponentTool = tool({
     dataContext: z
       .string()
       .optional()
-      .describe("Any specific data or context to include (e.g., 'Bitcoin price', 'Tokyo weather')"),
+      .describe(
+        "Any specific data or context to include. IMPORTANT: If using a RegistryFetcher, you MUST include the exact full toolId here (e.g., 'toolId=firecrawl-aisdk::searchTool, params={query:\"AI news\"}'). Never abbreviate package names.",
+      ),
   }),
   execute: async ({ name, description, dataContext }) => {
     // Generate the UI using the same model
@@ -773,13 +775,15 @@ Components should fetch fresh data on every page load. Use the **RegistryFetcher
 ### WORKFLOW FOR WIDGET CREATION
 1. \`registrySearch\` → find the right tool
 2. \`registryExecute\` → verify it works, show user the data
-3. \`createComponent\` → describe a component using RegistryFetcher with the SAME toolId + params
+3. \`createComponent\` → In the description, you MUST include the EXACT full toolId string (e.g. "firecrawl-aisdk::searchTool" NOT "firecrawl::searchTool"). Copy-paste it from the registryExecute call. Do NOT abbreviate or shorten package names.
 
 ### Example: "Create a widget showing Perplexity search results for AI news"
 1. \`registrySearch({ query: "perplexity search" })\`
 2. \`registryExecute({ toolId: "@perplexity-ai/ai-sdk::perplexitySearch", params: { query: "AI news" } })\`
 3. \`createComponent\` with description:
    "Create a Card containing a RegistryFetcher with toolId='@perplexity-ai/ai-sdk::perplexitySearch', params={query:'AI news'}, refreshInterval=60000. Display results as a list of SearchResult components."
+
+**CRITICAL**: The toolId in the RegistryFetcher MUST exactly match the toolId used in registryExecute. Never shorten or modify package names (e.g. use "firecrawl-aisdk::searchTool" not "firecrawl::searchTool").
 
 ### When Static Data Makes Sense
 Only use static data for:
