@@ -1604,6 +1604,63 @@ export function RegistryFetcher({ element }: ComponentRenderProps) {
   );
 }
 
+// DataDisplay Component - renders data from a DataProvider path
+export function DataDisplay({ element }: ComponentRenderProps) {
+  const { dataPath, title } = element.props as {
+    dataPath: string;
+    title?: string | null;
+  };
+
+  const data = useDataValue(dataPath);
+
+  if (data === undefined || data === null) {
+    return null; // Don't render anything until data is available
+  }
+
+  if (Array.isArray(data)) {
+    return (
+      <div className={styles.registryFetcherContainer}>
+        {title && <div className={styles.registryFetcherTitle}>{title}</div>}
+        <div className={styles.registryFetcherMeta}>{data.length} results</div>
+        <div className={styles.registryFetcherItems}>
+          {data.map((item, idx) => (
+            <div key={item?.id || item?.url || idx} className={styles.registryFetcherItem}>
+              {item && typeof item === "object" && (item.title || item.url || item.name) ? (
+                <>
+                  {(item.title || item.name) && (
+                    <div className={styles.registryFetcherItemTitle}>
+                      {item.url ? (
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          {item.title || item.name}
+                        </a>
+                      ) : (
+                        item.title || item.name
+                      )}
+                    </div>
+                  )}
+                  {item.description && (
+                    <div className={styles.registryFetcherItemDesc}>{item.description}</div>
+                  )}
+                </>
+              ) : (
+                <pre className={styles.registryFetcherJson}>{JSON.stringify(item, null, 2)}</pre>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Single object or primitive
+  return (
+    <div className={styles.registryFetcherContainer}>
+      {title && <div className={styles.registryFetcherTitle}>{title}</div>}
+      <pre className={styles.registryFetcherJson}>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
+
 // Export registry
 export const toolRegistry = {
   Button,
@@ -1643,4 +1700,5 @@ export const toolRegistry = {
   StoreStats,
   CategoryList,
   RegistryFetcher,
+  DataDisplay,
 };

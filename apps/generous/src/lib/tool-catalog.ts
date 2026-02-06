@@ -409,6 +409,16 @@ export const toolCatalog = createCatalog({
       description: "Fetches and displays pet categories from /api/categories.",
     },
 
+    // DataDisplay - renders data from a DataProvider path (used with apiCall resultPath)
+    DataDisplay: {
+      props: z.object({
+        dataPath: z.string(),
+        title: z.string().nullable(),
+      }),
+      description:
+        "Renders data stored in the DataProvider at the given path. Use with apiCall's resultPath to display results after form submission. Arrays with title/url/description render as linked cards. Shows nothing when data is null.",
+    },
+
     // Generic Registry Fetcher - works with ANY TPMJS registry tool
     RegistryFetcher: {
       props: z.object({
@@ -557,6 +567,17 @@ API REFERENCE (all endpoints support GET for reading, POST for creating):
 IMPORTANT: When creating components that need LIVE data from APIs, use the List components (PetList, CustomerList, etc.).
 These components fetch data dynamically and auto-refresh, so new data will appear automatically.
 Use the 'fields' prop to customize which data is displayed - this is key for creating focused views.
+
+DATA DISPLAY COMPONENTS:
+
+DataDisplay: Renders data from a DataProvider path. Use with apiCall's resultPath to display search results or API responses.
+  Props:
+  - dataPath (required): The DataProvider path to read from (e.g., "/results")
+  - title: Optional title above the data
+  Renders arrays with title/url/description as linked cards. Objects as JSON. Shows nothing when data is null.
+
+  IMPORTANT: Always pair DataDisplay with apiCall's resultPath + resultDataKey to show form submission results.
+  Example: Button action has resultPath="/results", resultDataKey="web", then DataDisplay reads from dataPath="/results".
 
 TPMJS REGISTRY DATA COMPONENT:
 

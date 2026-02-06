@@ -76,6 +76,8 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
           revalidate,
           successMessage,
           resetPaths,
+          resultPath,
+          resultDataKey,
         } = params as {
           endpoint: string;
           method?: string;
@@ -85,6 +87,8 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
           revalidate?: string[];
           successMessage?: string;
           resetPaths?: string[];
+          resultPath?: string;
+          resultDataKey?: string;
         };
 
         console.log("[Handler] apiCall called with:", params);
@@ -154,6 +158,12 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
             }
 
             console.log("[Handler] apiCall success:", data);
+
+            // Store response data at resultPath if specified
+            if (resultPath) {
+              const resultData = resultDataKey ? data?.data?.[resultDataKey] : (data?.data ?? data);
+              set(resultPath, resultData);
+            }
 
             // Set success state
             set("/apiSuccess", successMessage || "Success!");

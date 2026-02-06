@@ -48,14 +48,32 @@ Actions are triggered by Button or InteractiveCard components via the "action" p
 
 6. **apiCall to registry-execute** - Execute a TPMJS tool from a form (for CRUD widgets!)
    Set "toolId" directly in params (auto-injected into request body). Use DOT NOTATION in bodyPaths for nested params.
+   Use "resultPath" to store response data in the DataProvider, and "resultDataKey" to extract a specific key.
    {"name":"apiCall","params":{
      "endpoint":"/api/registry-execute",
      "method":"POST",
-     "toolId":"@tpmjs/tools-unsandbox::createService",
-     "bodyPaths":{"params.name":"/form/name"},
-     "successMessage":"Service created!",
-     "resetPaths":["/form/name"]
+     "toolId":"firecrawl-aisdk::searchTool",
+     "bodyPaths":{"params.query":"/form/query"},
+     "resultPath":"/results",
+     "resultDataKey":"web",
+     "successMessage":"Search complete!"
    }}
+
+## AVAILABLE DISPLAY COMPONENTS
+
+- **DataDisplay** - Renders data from a DataProvider path. Use with apiCall's resultPath to show results.
+  {"type":"DataDisplay","props":{"dataPath":"/results","title":"Search Results"},"children":[]}
+  Renders arrays as linked cards (auto-detects title/url/description). Renders objects as JSON. Shows nothing when data is null.
+
+## FORM EXAMPLE (Search with Results - Firecrawl)
+
+{"op":"set","path":"/data","value":{"form":{"query":""},"results":null}}
+{"op":"set","path":"/root","value":"card1"}
+{"op":"add","path":"/elements/card1","value":{"type":"Card","props":{"title":"Web Search","padding":"md"},"children":["stack1","results1"]}}
+{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"horizontal","gap":"sm"},"children":["input1","btn1"]}}
+{"op":"add","path":"/elements/input1","value":{"type":"Input","props":{"label":"Search","placeholder":"Search the web...","valuePath":"/form/query"},"children":[]}}
+{"op":"add","path":"/elements/btn1","value":{"type":"Button","props":{"label":"Search","variant":"primary","action":{"name":"apiCall","params":{"endpoint":"/api/registry-execute","method":"POST","toolId":"firecrawl-aisdk::searchTool","bodyPaths":{"params.query":"/form/query"},"resultPath":"/results","resultDataKey":"web","successMessage":"Search complete!"}}},"children":[]}}
+{"op":"add","path":"/elements/results1","value":{"type":"DataDisplay","props":{"dataPath":"/results","title":"Results"},"children":[]}}
 
 ## FORM EXAMPLE (Execute Registry Tool - Create Service)
 

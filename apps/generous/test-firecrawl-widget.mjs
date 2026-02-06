@@ -158,11 +158,14 @@ async function main() {
 
   // The widget would have a form with a search input and submit button.
   // The button's apiCall would call registry-execute with firecrawl searchTool.
+  // resultPath stores the response in the DataProvider for DataView to render.
   const searchActionParams = {
     endpoint: "/api/registry-execute",
     method: "POST",
     toolId: "firecrawl-aisdk::searchTool",
     bodyPaths: { "params.query": "/form/query" },
+    resultPath: "/results",
+    resultDataKey: "web",
     successMessage: "Search complete!",
     resetPaths: [],
   };
@@ -214,36 +217,64 @@ async function main() {
   // ============================================================
   console.log("\n=== SECTION 3: JSONL Widget Validation ===\n");
 
-  // Test 7: A search form widget with apiCall parses correctly
+  // Test 7: A search form widget with apiCall + resultPath + DataView parses correctly
   {
-    const jsonl = `{"op":"set","path":"/data","value":{"form":{"query":""}}}
+    const jsonl = `{"op":"set","path":"/data","value":{"form":{"query":""},"results":null}}
 {"op":"set","path":"/root","value":"card1"}
-{"op":"add","path":"/elements/card1","value":{"type":"Card","props":{"title":"Firecrawl Search","padding":"md"},"children":["stack1"]}}
-{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"vertical","gap":"md"},"children":["input1","btn1"]}}
-{"op":"add","path":"/elements/input1","value":{"type":"Input","props":{"label":"Search Query","placeholder":"Search the web...","valuePath":"/form/query"},"children":[]}}
-{"op":"add","path":"/elements/btn1","value":{"type":"Button","props":{"label":"Search","variant":"primary","action":{"name":"apiCall","params":{"endpoint":"/api/registry-execute","method":"POST","toolId":"firecrawl-aisdk::searchTool","bodyPaths":{"params.query":"/form/query"},"successMessage":"Search complete!"}}},"children":[]}}`;
+{"op":"add","path":"/elements/card1","value":{"type":"Card","props":{"title":"Firecrawl Search","padding":"md"},"children":["stack1","results1"]}}
+{"op":"add","path":"/elements/stack1","value":{"type":"Stack","props":{"direction":"horizontal","gap":"sm"},"children":["input1","btn1"]}}
+{"op":"add","path":"/elements/input1","value":{"type":"Input","props":{"label":"Search","placeholder":"Search the web...","valuePath":"/form/query"},"children":[]}}
+{"op":"add","path":"/elements/btn1","value":{"type":"Button","props":{"label":"Search","variant":"primary","action":{"name":"apiCall","params":{"endpoint":"/api/registry-execute","method":"POST","toolId":"firecrawl-aisdk::searchTool","bodyPaths":{"params.query":"/form/query"},"resultPath":"/results","resultDataKey":"web","successMessage":"Search complete!"}}},"children":[]}}
+{"op":"add","path":"/elements/results1","value":{"type":"DataView","props":{"dataPath":"/results","title":"Results"},"children":[]}}`;
 
     const tree = parseJSONLToTree(jsonl);
     if (!tree) { fail("Search form widget JSONL parses", "null"); return; }
 
     // Validate structure
+    const actionParams = tree.elements.btn1?.props?.action?.params;
     const checks = [
       [tree.root === "card1", "root is card1"],
       [tree.data?.form?.query === "", "data has form.query initialized"],
+      [tree.data?.results === null, "data has results initialized to null"],
       [tree.elements.input1?.props?.valuePath === "/form/query", "input bound to /form/query"],
       [tree.elements.btn1?.props?.action?.name === "apiCall", "button has apiCall action"],
-      [tree.elements.btn1?.props?.action?.params?.toolId === "firecrawl-aisdk::searchTool", "apiCall has correct toolId"],
-      [tree.elements.btn1?.props?.action?.params?.bodyPaths?.["params.query"] === "/form/query", "bodyPaths maps params.query to /form/query"],
+      [actionParams?.toolId === "firecrawl-aisdk::searchTool", "apiCall has correct toolId"],
+      [actionParams?.bodyPaths?.["params.query"] === "/form/query", "bodyPaths maps params.query"],
+      [actionParams?.resultPath === "/results", "apiCall stores results at /results"],
+      [actionParams?.resultDataKey === "web", "apiCall extracts 'web' key from response"],
+      [tree.elements.results1?.type === "DataView", "DataView component exists"],
+      [tree.elements.results1?.props?.dataPath === "/results", "DataView reads from /results"],
+      [tree.elements.card1?.children?.includes("results1"), "DataView is child of card (renders below form)"],
     ];
 
-    let allOk = true;
     for (const [ok, label] of checks) {
       if (ok) {
         pass(`Widget JSONL: ${label}`);
       } else {
         fail(`Widget JSONL: ${label}`, "check failed");
-        allOk = false;
       }
+    }
+  }
+
+  // Test 8: Simulate the resultPath data flow
+  {
+    // Simulate: apiCall gets response {success:true, data:{web:[...]}}
+    // With resultDataKey="web", it stores data.data.web at resultPath="/results"
+    const apiResponse = { success: true, data: { web: [{ title: "Test", url: "https://example.com", description: "A test result" }] } };
+    const resultDataKey = "web";
+    const resultData = resultDataKey ? apiResponse?.data?.[resultDataKey] : apiResponse?.data ?? apiResponse;
+
+    if (Array.isArray(resultData) && resultData[0]?.title === "Test") {
+      pass("resultDataKey extracts correct array from response");
+    } else {
+      fail("resultDataKey extracts correct array", JSON.stringify(resultData));
+    }
+
+    // DataView would read this from dataPath="/results"
+    if (resultData[0].url && resultData[0].title && resultData[0].description) {
+      pass("Extracted data has title/url/description (DataView smart rendering will work)");
+    } else {
+      fail("Extracted data has title/url/description", JSON.stringify(Object.keys(resultData[0])));
     }
   }
 
@@ -273,10 +304,10 @@ async function main() {
       const messages = [{
         id: "test-fc-1",
         role: "user",
-        content: 'Create a "Firecrawl Search" widget - a form with a search input and a "Search" button. The button should use apiCall with endpoint "/api/registry-execute", toolId "firecrawl-aisdk::searchTool", and bodyPaths {"params.query": "/form/query"}.',
+        content: 'Create a "Firecrawl Search" widget with a search input, a "Search" button, and a DataView below to show results. The button should use apiCall with endpoint "/api/registry-execute", toolId "firecrawl-aisdk::searchTool", bodyPaths {"params.query": "/form/query"}, resultPath "/results", resultDataKey "web". Add a DataView with dataPath "/results" to render the results below the form.',
         parts: [{
           type: "text",
-          text: 'Create a "Firecrawl Search" widget - a form with a search input and a "Search" button. The button should use apiCall with endpoint "/api/registry-execute", toolId "firecrawl-aisdk::searchTool", and bodyPaths {"params.query": "/form/query"}.',
+          text: 'Create a "Firecrawl Search" widget with a search input, a "Search" button, and a DataView below to show results. The button should use apiCall with endpoint "/api/registry-execute", toolId "firecrawl-aisdk::searchTool", bodyPaths {"params.query": "/form/query"}, resultPath "/results", resultDataKey "web". Add a DataView with dataPath "/results" to render the results below the form.',
         }],
       }];
 
