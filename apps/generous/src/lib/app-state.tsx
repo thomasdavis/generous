@@ -9,6 +9,7 @@ import {
   deleteComponent,
   exportAppState,
   type GridLayoutItem,
+  getActiveDashboard,
   getChatHistory,
   getComponents,
   getGridLayout,
@@ -16,7 +17,9 @@ import {
   saveChatMessage,
   saveComponent,
   saveGridLayout,
+  setActiveDashboard,
 } from "./db";
+import { getSyncManager } from "./sync/queue";
 
 /**
  * Analyzes component characteristics to determine optimal grid size.
@@ -101,9 +104,28 @@ function getOptimalSize(name: string, tree: unknown): { width: number; height: n
   return { width: 4, height: 3 };
 }
 
+// Dashboard info type (server or local)
+interface DashboardInfo {
+  id: string | null; // null = local-only mode
+  slug?: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  role: string;
+  isServerDashboard: boolean;
+}
+
 interface AppStateContextValue {
   // Loading state
   isLoaded: boolean;
+
+  // Dashboard context
+  currentDashboard: DashboardInfo;
+  setCurrentDashboard: (dashboardId: string | null) => Promise<void>;
+  createDashboard: (name: string) => Promise<DashboardInfo>;
+  updateDashboard: (
+    updates: Partial<Pick<DashboardInfo, "name" | "description" | "isPublic">>,
+  ) => Promise<void>;
 
   // Chat
   chatHistory: ChatMessage[];
@@ -128,26 +150,83 @@ interface AppStateContextValue {
   // Export
   exportState: () => Promise<AppState>;
   clearAll: () => Promise<void>;
+
+  // Sync status
+  syncStatus: "idle" | "syncing" | "error" | "offline";
+  syncNow: () => Promise<void>;
 }
 
 const AppStateContext = createContext<AppStateContextValue | null>(null);
 
+const DEFAULT_DASHBOARD: DashboardInfo = {
+  id: null,
+  name: "Local Dashboard",
+  isPublic: false,
+  role: "owner",
+  isServerDashboard: false,
+};
+
 export function AppStateProvider({ children }: { children: ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentDashboard, setCurrentDashboardState] = useState<DashboardInfo>(DEFAULT_DASHBOARD);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [components, setComponents] = useState<StoredComponent[]>([]);
   const [gridLayout, setGridLayout] = useState<GridLayoutItem[]>([]);
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "error" | "offline">("idle");
 
-  // Load initial state from IndexedDB
+  // Subscribe to sync manager status
+  useEffect(() => {
+    const syncManager = getSyncManager();
+    const unsubscribe = syncManager.onStatusChange((status) => {
+      setSyncStatus(status);
+    });
+    return unsubscribe;
+  }, []);
+
+  // Load initial state from IndexedDB and server
   useEffect(() => {
     async function loadState() {
       try {
-        const [chat, comps, layout] = await Promise.all([
-          getChatHistory(),
-          getComponents(),
-          getGridLayout(),
-        ]);
+        // Load chat history (always local)
+        const chat = await getChatHistory();
         setChatHistory(chat);
+
+        // Check for active dashboard
+        const activeDashboardId = await getActiveDashboard();
+
+        if (activeDashboardId) {
+          // Try to load from server
+          try {
+            const response = await fetch(`/api/dashboards/${activeDashboardId}`);
+            if (response.ok) {
+              const dashboard = await response.json();
+              setCurrentDashboardState({
+                id: dashboard.id,
+                slug: dashboard.slug,
+                name: dashboard.name,
+                description: dashboard.description,
+                isPublic: dashboard.isPublic,
+                role: dashboard.role || "owner",
+                isServerDashboard: true,
+              });
+              setComponents(dashboard.components || []);
+              const layout = dashboard.gridLayout || [{ i: "chat", x: 0, y: 0, w: 4, h: 4 }];
+              const hasChat = layout.some((item: GridLayoutItem) => item.i === "chat");
+              if (!hasChat) {
+                layout.unshift({ i: "chat", x: 0, y: 0, w: 4, h: 4 });
+              }
+              setGridLayout(layout);
+              setIsLoaded(true);
+              return;
+            }
+          } catch {
+            // Server not available, fall back to local
+            console.warn("Server not available, using local state");
+          }
+        }
+
+        // Fall back to local storage
+        const [comps, layout] = await Promise.all([getComponents(), getGridLayout()]);
         setComponents(comps);
 
         // Ensure chat widget is always in layout
@@ -382,12 +461,117 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setChatHistory([]);
     setComponents([]);
     setGridLayout([{ i: "chat", x: 0, y: 0, w: 4, h: 4 }]);
+    setCurrentDashboardState(DEFAULT_DASHBOARD);
+  }, []);
+
+  // Dashboard management
+  const setCurrentDashboardFn = useCallback(async (dashboardId: string | null) => {
+    await setActiveDashboard(dashboardId);
+
+    if (!dashboardId) {
+      // Switch to local mode
+      setCurrentDashboardState(DEFAULT_DASHBOARD);
+      const [comps, layout] = await Promise.all([getComponents(), getGridLayout()]);
+      setComponents(comps);
+      const hasChat = layout.some((item) => item.i === "chat");
+      if (!hasChat) {
+        layout.unshift({ i: "chat", x: 0, y: 0, w: 4, h: 4 });
+      }
+      setGridLayout(layout);
+      return;
+    }
+
+    // Fetch from server
+    const response = await fetch(`/api/dashboards/${dashboardId}`);
+    if (!response.ok) {
+      throw new Error("Failed to load dashboard");
+    }
+
+    const dashboard = await response.json();
+    setCurrentDashboardState({
+      id: dashboard.id,
+      slug: dashboard.slug,
+      name: dashboard.name,
+      description: dashboard.description,
+      isPublic: dashboard.isPublic,
+      role: dashboard.role || "owner",
+      isServerDashboard: true,
+    });
+    setComponents(dashboard.components || []);
+    const layout = dashboard.gridLayout || [{ i: "chat", x: 0, y: 0, w: 4, h: 4 }];
+    const hasChat = layout.some((item: GridLayoutItem) => item.i === "chat");
+    if (!hasChat) {
+      layout.unshift({ i: "chat", x: 0, y: 0, w: 4, h: 4 });
+    }
+    setGridLayout(layout);
+  }, []);
+
+  const createDashboard = useCallback(async (name: string): Promise<DashboardInfo> => {
+    const response = await fetch("/api/dashboards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create dashboard");
+    }
+
+    const dashboard = await response.json();
+    return {
+      id: dashboard.id,
+      slug: dashboard.slug,
+      name: dashboard.name,
+      description: dashboard.description,
+      isPublic: dashboard.isPublic,
+      role: "owner",
+      isServerDashboard: true,
+    };
+  }, []);
+
+  const updateDashboard = useCallback(
+    async (updates: Partial<Pick<DashboardInfo, "name" | "description" | "isPublic">>) => {
+      if (!currentDashboard.id) {
+        // Local mode - just update local state
+        setCurrentDashboardState((prev) => ({ ...prev, ...updates }));
+        return;
+      }
+
+      const response = await fetch(`/api/dashboards/${currentDashboard.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update dashboard");
+      }
+
+      const dashboard = await response.json();
+      setCurrentDashboardState((prev) => ({
+        ...prev,
+        name: dashboard.name,
+        description: dashboard.description,
+        isPublic: dashboard.isPublic,
+        slug: dashboard.slug,
+      }));
+    },
+    [currentDashboard.id],
+  );
+
+  const syncNow = useCallback(async () => {
+    const syncManager = getSyncManager();
+    await syncManager.syncNow();
   }, []);
 
   return (
     <AppStateContext.Provider
       value={{
         isLoaded,
+        currentDashboard,
+        setCurrentDashboard: setCurrentDashboardFn,
+        createDashboard,
+        updateDashboard,
         chatHistory,
         addChatMessage,
         clearChat,
@@ -399,6 +583,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         updateGridLayout,
         exportState: exportStateCallback,
         clearAll,
+        syncStatus,
+        syncNow,
       }}
     >
       {children}

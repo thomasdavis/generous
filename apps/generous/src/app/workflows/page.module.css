@@ -1,0 +1,141 @@
+.container {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--color-background, #fafafa);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: var(--color-text, #111);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary, #666);
+  margin: 0;
+}
+
+.createForm {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-secondary, #666);
+}
+
+.error {
+  padding: 16px;
+  background: var(--color-error-light, #fee2e2);
+  color: var(--color-error, #dc2626);
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.empty h2 {
+  font-size: 20px;
+  margin: 0 0 8px 0;
+  color: var(--color-text, #111);
+}
+
+.empty p {
+  font-size: 14px;
+  color: var(--color-text-secondary, #666);
+  margin: 0 0 20px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.15s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #111);
+  text-decoration: none;
+}
+
+.cardTitle:hover {
+  color: var(--color-primary, #0066cc);
+}
+
+.status {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.statusEnabled {
+  background: var(--color-success-light, #dcfce7);
+  color: var(--color-success, #16a34a);
+}
+
+.statusDisabled {
+  background: var(--color-surface-secondary, #f5f5f5);
+  color: var(--color-text-secondary, #666);
+}
+
+.cardDescription {
+  font-size: 13px;
+  color: var(--color-text-secondary, #666);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.cardMeta {
+  font-size: 12px;
+  color: var(--color-text-secondary, #666);
+}
+
+.cardActions {
+  display: flex;
+  gap: 4px;
+}

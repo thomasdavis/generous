@@ -1,0 +1,31 @@
+.container {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--color-background, #fafafa);
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: var(--color-text, #111);
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-secondary, #666);
+  margin: 0;
+}
+
+.success {
+  padding: 16px;
+  background: var(--color-success-light, #dcfce7);
+  color: var(--color-success, #16a34a);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}

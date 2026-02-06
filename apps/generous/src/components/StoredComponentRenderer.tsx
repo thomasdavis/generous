@@ -23,6 +23,7 @@ interface UITree {
 
 interface StoredComponentRendererProps {
   component: StoredComponent;
+  readOnly?: boolean;
 }
 
 // Color cycle for toggle actions
@@ -170,7 +171,10 @@ function InteractiveRenderer({ tree }: { tree: UITree }) {
   );
 }
 
-export function StoredComponentRenderer({ component }: StoredComponentRendererProps) {
+export function StoredComponentRenderer({
+  component,
+  readOnly = false,
+}: StoredComponentRendererProps) {
   const { removeComponent } = useAppState();
   const [showJson, setShowJson] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -188,6 +192,20 @@ export function StoredComponentRenderer({ component }: StoredComponentRendererPr
     return (
       <div className={styles.error}>
         <span>Failed to render component</span>
+      </div>
+    );
+  }
+
+  // Read-only mode for public dashboards
+  if (readOnly) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <span className={styles.title}>{component.name}</span>
+        </div>
+        <div className={styles.content}>
+          <InteractiveRenderer tree={tree} />
+        </div>
       </div>
     );
   }

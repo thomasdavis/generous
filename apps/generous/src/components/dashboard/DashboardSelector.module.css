@@ -1,0 +1,158 @@
+.container {
+  position: relative;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--color-surface-secondary, #f5f5f5);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.trigger:hover {
+  background: var(--color-surface-tertiary, #eeeeee);
+}
+
+.label {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  min-width: 280px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e0e0e0);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.loading,
+.error {
+  padding: 16px;
+  text-align: center;
+  color: var(--color-text-secondary, #666);
+  font-size: 13px;
+}
+
+.error {
+  color: var(--color-error, #dc2626);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s ease;
+}
+
+.option:hover {
+  background: var(--color-surface-secondary, #f5f5f5);
+}
+
+.optionActive {
+  background: var(--color-primary-light, #e0f2fe);
+}
+
+.optionActive:hover {
+  background: var(--color-primary-light, #e0f2fe);
+}
+
+.optionName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text, #111);
+}
+
+.optionMeta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.optionBadge {
+  font-size: 11px;
+  color: var(--color-text-secondary, #666);
+  padding: 2px 6px;
+  background: var(--color-surface-tertiary, #eee);
+  border-radius: 4px;
+}
+
+.publicBadge {
+  font-size: 11px;
+  color: var(--color-success, #16a34a);
+  padding: 2px 6px;
+  background: var(--color-success-light, #dcfce7);
+  border-radius: 4px;
+}
+
+.roleBadge {
+  font-size: 11px;
+  color: var(--color-text-secondary, #666);
+  text-transform: capitalize;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border, #e0e0e0);
+  margin: 4px 0;
+}
+
+.createButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-primary, #0066cc);
+  transition: background 0.1s ease;
+}
+
+.createButton:hover {
+  background: var(--color-surface-secondary, #f5f5f5);
+}
+
+.createForm {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.createActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
