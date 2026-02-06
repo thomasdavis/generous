@@ -70,6 +70,7 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
         const {
           endpoint,
           method = "POST",
+          toolId,
           bodyPaths,
           body,
           revalidate,
@@ -78,6 +79,7 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
         } = params as {
           endpoint: string;
           method?: string;
+          toolId?: string;
           bodyPaths?: Record<string, string>;
           body?: Record<string, unknown>;
           revalidate?: string[];
@@ -89,6 +91,10 @@ function InteractiveRendererInner({ tree }: { tree: UITree }) {
 
         // Build request body from data paths or use provided body
         const requestBody: Record<string, unknown> = body ? { ...body } : {};
+        // Auto-inject toolId for registry-execute calls
+        if (toolId) {
+          requestBody.toolId = toolId;
+        }
         if (bodyPaths) {
           for (const [key, path] of Object.entries(bodyPaths)) {
             const value = get(path);
